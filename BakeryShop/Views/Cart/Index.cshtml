@@ -1,0 +1,181 @@
+﻿@model List<CartItemVewModel>
+@{
+    Double totalPrice = 0;
+    foreach (CartItemVewModel cartItem in Model)
+    {
+        totalPrice += cartItem.TotalPrice;
+
+    }
+
+}
+        <div class="cart-table-area section-padding-100">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 col-lg-8">
+                        <div class="cart-title mt-50">
+                            <h2>Giỏ hàng</h2>
+                        </div>
+
+                        <div class="cart-table clearfix">
+                            <table class="table table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Tên</th>
+                                        <th>Giá</th>
+                                        <th>Số lượng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+           
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr id="product-@item.ProductId">
+                                        <td class="cart_product_img">
+                                            <img src="data:image;base64,@Convert.ToBase64String(item.ProductImage)" alt="Product">
+                                        </td>
+                                        <td class="cart_product_desc">
+                                            <h5>Tên: @item.ProductName</h5>
+                                        </td>
+                                        <td class="price">
+                                            <span>@item.Price</span>
+                                        </td>
+                                        <td class="qty">
+                                            <div class="qty-btn d-flex">
+                                     
+                                                <div class="quantity">
+                                                    <span class="qty-minus" onclick="decreaseQuantity(@item.ProductId);"><i class="fa fa-minus" aria-hidden="true"></i></span>
+                                                    <input type="number" class="qty-text" id="qty-@item.ProductId" step="1" min="1" max="300" name="quantity" value="@item.Quantity">
+                                                    <span class="qty-plus" onclick="increaseQuantity(@item.ProductId);"><i class="fa fa-plus" aria-hidden="true"></i></span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                   
+                                        <td>
+                                            <a onclick="removeProduct(@item.ProductId);">Xóa</a>
+                                        </td>
+                                      
+                                    </tr>
+                                }
+                            }
+                              
+                           
+                        </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <h5>Cart Total</h5>
+                        <ul class="summary-table">
+                            <li><span>Tổng cộng:</span> <span id="totalPrice">@totalPrice VND</span></li>
+                            
+                        </ul>
+                    @if (Model.Count == 0)
+                    {
+                        <div class="cart-btn mt-100 ajax-to-checkout">
+                                <a  class="btn amado-btn w-100">Thanh toán</a>
+                            </div>
+                    } else
+                        {
+                            <div class="cart-btn mt-100">
+                                <a href="@Url.Action("CheckOutBill", "Cart")" class="btn amado-btn w-100">Thanh toán</a>
+                            </div>
+                        }
+                      
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section checkout{
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+        $(document).ready(function () {
+            $(".ajax-to-checkout").click(function (event) {
+                event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
+                // Hiển thị SweetAlert 
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: 'Bạn không có sản phẩm nào  để thanh toán',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+            });
+        });
+    </script>
+    <script>
+        function decreaseQuantity(productId) {
+            var inputElement = document.getElementById("qty-" + productId);
+            var currentValue = parseInt(inputElement.value, 10);
+            if (currentValue > 1) {
+                inputElement.value = currentValue - 1;
+                updateQuantity(productId, currentValue - 1);
+            }
+        }
+
+        function increaseQuantity(productId) {
+            var inputElement = document.getElementById("qty-" + productId);
+            var currentValue = parseInt(inputElement.value, 10);
+            if (currentValue < 300) {
+                inputElement.value = currentValue + 1;
+                updateQuantity(productId, currentValue + 1);
+            }
+        }
+        function updateQuantity(productId, newQuantity) {
+    
+            $(".qty-plus, .qty-minus").prop("disabled", true);
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("UpdateQuantity", "Cart")",
+                data: { productId: productId, newQuantity: newQuantity },
+                success: function (data) {
+                    if (data.success) {
+                     
+                        $("#qty-" + productId).val(newQuantity);
+                        totalPrice = data.totalPrice;
+                        $("#totalPrice").text(totalPrice + " VND");
+                        $("#totalQuantity").text(data.totalQuantity);
+                        console.log("Số lượng sản phẩm đã được cập nhật thành công.");
+                    } else {
+
+                        console.error("Lỗi khi cập nhật số lượng sản phẩm.");
+                    }
+                },
+                error: function (error) {
+                    console.error("Lỗi khi cập nhật số lượng: " + error);
+                },
+                complete: function () {
+                    $(".qty-plus, .qty-minus").prop("disabled", false);
+                }
+            });
+        }
+        function removeProduct(productId) {
+        
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("RemoveProduct", "Cart")", 
+                data: { productId: productId },
+                success: function (data) {
+                    if (data.success) {
+                        $("#product-" + productId).remove();
+                        $("#totalPrice").text(data.totalPrice + " VND");
+                        $("#totalQuantity").text(data.totalQuantity);
+                    } else {
+                        console.error("Lỗi khi xóa sản phẩm.");
+                    }
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gửi yêu cầu xóa sản phẩm: " + error);
+                }
+            });
+        }
+
+</script>
+}

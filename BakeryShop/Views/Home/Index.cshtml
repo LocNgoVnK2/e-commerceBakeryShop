@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+
+}
+@using Infrastructure.Entities;
+@using Newtonsoft.Json;
+@using X.PagedList.Mvc
+@using X.PagedList
+@using X.PagedList.Web.Common
+@using X.PagedList.Mvc.Core
+@model IPagedList<ProductViewModel>
+
+<div class="products-catagories-area clearfix"">
+    <div class="amado-pro-catagory clearfix">
+
+     
+        <!-- Single Catagory -->
+          @foreach (ProductViewModel product in Model)
+        {
+            if (product.IsUsed == true)
+            {
+        <div class="single-products-catagory clearfix" style="width:400px;height:600px">
+
+                    <a href="@Url.Action("Index", "Detail", new { id = product.ProductID })">
+                    
+                    
+                        <img src="data:image;base64,@Convert.ToBase64String(product.Image)" style="width:100%;height:100%" alt="">
+                <!-- Hover Content  -->
+                <div class="hover-content">
+                    <div class="line"></div>
+                        <p style="color: white;">Chỉ từ @product.Price VND</p>
+                        <h4 style="color: white;">@product.ProductName</h4>
+                </div>
+            </a>
+        </div>
+            }
+        }
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+            <!-- Pagination -->
+            <nav aria-label="navigation">
+                <ul class="pagination justify-content-end mt-50">
+                    @if (Model.HasPreviousPage)
+                    {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = 1 })">First</a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1 })">Pre</a>
+                                            </li>
+                    }
+
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                                            </li>
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                                            <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1 })">Next</a>
+                                            </li>
+                                            <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = Model.PageCount })">Last</a>
+                                            </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
