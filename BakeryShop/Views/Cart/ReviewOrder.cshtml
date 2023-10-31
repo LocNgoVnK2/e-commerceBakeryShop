@@ -55,17 +55,18 @@
                                                 @if (order.IsAccept == true && order.IsReceived == false)
                                                 {
                                                     <p style="color: dodgerblue;">Đơn hàng đã được chấp nhận</p>
+                                                <a class="btn-primary" style="padding:15px;" asp-action="Index" asp-controller="Delivery"> Tiến độ giao hàng </a>
                                                     
                                                 }
                                                 else if (order.IsAccept == true && order.IsReceived == true)
                                                 {
                                                     <p style="color: limegreen;">Đơn hàng đã được hoàn thành</p>
-                                                <a class="btn btn-primary" asp-action="Index" asp-controller="RatingProduct" asp-route-phoneNumber="@order.PhoneNumber" asp-route-IdOrder="@order.IdOrder">Đánh giá</a>
+                                                <a class="btn-primary" style="padding:15px;" asp-action="Index" asp-controller="RatingProduct" asp-route-phoneNumber="@order.PhoneNumber" asp-route-IdOrder="@order.IdOrder">Đánh giá</a>
                                                 }
                                                 else
                                                 {
                                                     <p style="color: orangered;">Đơn hàng đang được xử lí</p>
-                                                <a asp-action="CancelOrder" asp-controller="Cart" asp-route-orderId="@order.IdOrder" class="btn btn-primary">Hủy hóa đơn</a>
+                                                <a asp-action="CancelOrder" style="padding:15px;" asp-controller="Cart" asp-route-orderId="@order.IdOrder" class="btn-primary">Hủy hóa đơn</a>
                                                 }
                                             
                                         </td>

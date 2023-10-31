@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "4QkBM7nSteMb1rwu+RK7mn78nYu8edJadCx45lV7vrUZ4dMxHLViwAqPtrcejxShFFjn6YYOxMLfjTc6PPcsJw==",
+  "dgSpecHash": "OhBlzjXKMu+8XdhJeytsue/YIuPAJPOA2ZmjzPJv9McJUW7I49SltzQXWFcSK4zAxvqv5abggQhGDwhR5qm/mA==",
   "success": true,
   "projectFilePath": "D:\\.netSave\\BakeryShop\\BakeryShop\\BakeryShop.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\a\\.nuget\\packages\\aspnetcore.recaptcha\\1.7.0\\aspnetcore.recaptcha.1.7.0.nupkg.sha512",
     "C:\\Users\\a\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\a\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "C:\\Users\\a\\.nuget\\packages\\bcrypt.net\\0.1.0\\bcrypt.net.0.1.0.nupkg.sha512",

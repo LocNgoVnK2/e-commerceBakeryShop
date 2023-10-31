@@ -8,7 +8,7 @@ using Infrastructure.EF;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Entities;
-
+using AspNetCore.ReCaptcha;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -63,9 +63,15 @@ builder.Services.AddScoped<ICheckOutService, CheckOutService>();
 //review 
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddReCaptcha(options =>
+{
+    options.SiteKey = "6LfbKeQoAAAAAOtpzTn-GhySPdkHFVJuLChkYIgK";
+    options.SecretKey = "6LfbKeQoAAAAAAh_ZW-NTVe9vqDi3GUocFtRycDh";
+});
 
 builder.Services.AddDbContext<EXDbContext>(options =>
 {
+
     options.UseSqlServer(builder.Configuration.GetConnectionString("EXDbContextConnection"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });

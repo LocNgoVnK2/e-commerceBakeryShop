@@ -2,6 +2,26 @@
   "version": 3,
   "targets": {
     "net6.0": {
+      "AspNetCore.ReCaptcha/1.7.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Options": "3.1.0"
+        },
+        "compile": {
+          "lib/net6.0/AspNetCore.ReCaptcha.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/AspNetCore.ReCaptcha.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ],
+        "resource": {
+          "lib/net6.0/nl/AspNetCore.ReCaptcha.resources.dll": {
+            "locale": "nl"
+          }
+        }
+      },
       "AutoMapper/12.0.1": {
         "type": "package",
         "dependencies": {
@@ -952,6 +972,25 @@
     }
   },
   "libraries": {
+    "AspNetCore.ReCaptcha/1.7.0": {
+      "sha512": "lDuXXZUIB2kNh3c3MYxB2nXlAw2ixJdZagZvkrpZhhKXEdcmIMMWLpH3FZY28ls0An/U+vBbebTpI+kBx/z3YA==",
+      "type": "package",
+      "path": "aspnetcore.recaptcha/1.7.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "aspnetcore.recaptcha.1.7.0.nupkg.sha512",
+        "aspnetcore.recaptcha.nuspec",
+        "lib/net5.0/AspNetCore.ReCaptcha.dll",
+        "lib/net5.0/nl/AspNetCore.ReCaptcha.resources.dll",
+        "lib/net6.0/AspNetCore.ReCaptcha.dll",
+        "lib/net6.0/nl/AspNetCore.ReCaptcha.resources.dll",
+        "lib/netcoreapp3.1/AspNetCore.ReCaptcha.dll",
+        "lib/netcoreapp3.1/nl/AspNetCore.ReCaptcha.resources.dll",
+        "logo.png"
+      ]
+    },
     "AutoMapper/12.0.1": {
       "sha512": "hvV62vl6Hp/WfQ24yzo3Co9+OPl8wH8hApwVtgWpiAynVJkUcs7xvehnSftawL8Pe8FrPffBRM3hwzLQqWDNjA==",
       "type": "package",
@@ -2404,6 +2443,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "AspNetCore.ReCaptcha >= 1.7.0",
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.1",
       "BCrypt.Net >= 0.1.0",
       "Infrastructure >= 1.0.0",
@@ -2460,6 +2500,10 @@
       "net6.0": {
         "targetAlias": "net6.0",
         "dependencies": {
+          "AspNetCore.ReCaptcha": {
+            "target": "Package",
+            "version": "[1.7.0, )"
+          },
           "AutoMapper.Extensions.Microsoft.DependencyInjection": {
             "target": "Package",
             "version": "[12.0.1, )"
