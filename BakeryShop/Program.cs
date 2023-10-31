@@ -65,8 +65,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddReCaptcha(options =>
 {
-    options.SiteKey = "6LfbKeQoAAAAAOtpzTn-GhySPdkHFVJuLChkYIgK";
-    options.SecretKey = "6LfbKeQoAAAAAAh_ZW-NTVe9vqDi3GUocFtRycDh";
+   
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>
