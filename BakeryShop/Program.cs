@@ -1,4 +1,4 @@
-using BakeryShop;
+﻿using BakeryShop;
 using AutoMapper;
 
 using Infrastructure.Generic;
@@ -65,8 +65,8 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddReCaptcha(options =>
 {
-    options.SiteKey = "6LfbKeQoAAAAAOtpzTn-GhySPdkHFVJuLChkYIgK";
-    options.SecretKey = "6LfbKeQoAAAAAAh_ZW-NTVe9vqDi3GUocFtRycDh";
+    options.SiteKey = "6LeWRegoAAAAALNzl8rzOZayHsUBcRlKVZD9jW5C";
+    //khi mở file api.txt
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>

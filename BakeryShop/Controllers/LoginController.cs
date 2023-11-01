@@ -11,6 +11,8 @@ using Newtonsoft.Json.Linq;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Http;
 using AspNetCore.ReCaptcha;
+using System.ComponentModel.DataAnnotations;
+
 namespace BakeryShop.Controllers
 {
     public class LoginController : Controller
@@ -36,14 +38,17 @@ namespace BakeryShop.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken] // chống request từ nơi ko phải site của mình bằng 1 cái token hidden
         [ValidateReCaptcha]
+       
         public async Task<IActionResult> Login(AccountsViewModel accounts)
         {
+            
             if (!ModelState.IsValid)
             {
+        
                 ViewBag.ErrorMessage = "reCAPTCHA validation failed. Bạn phải đánh dấu để kiểm tra không phải là robot.";
                 return View(accounts);
             }
-
+            
 
             if (accounts != null)
             {
