@@ -96,6 +96,7 @@
                                     @if (loggedInUser.Role == "2")
                                     {
                                         <a asp-action="CheckOutBillByEmployess" asp-controller="DashBoard" asp-route-orderId="@order.IdOrder" asp-route-accountId="@loggedInUser.AccountID" id="check-out-bill" class="btn btn-primary" data-selected-order="">Giao đơn hàng</a>
+                                            <a asp-action="GenerateBillPDF" asp-controller="DashBoard" asp-route-orderId="@order.IdOrder" id="check-out-bill" class="btn btn-primary">In Bill</a>
                                     }
                                     </td>
                                 </tr>

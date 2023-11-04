@@ -68,6 +68,18 @@
             "X.PagedList.Mvc.Core": {
               "target": "Package",
               "version": "[8.4.7, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "itext7.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "itext7.pdfhtml": {
+              "target": "Package",
+              "version": "[5.0.2, )"
             }
           },
           "imports": [

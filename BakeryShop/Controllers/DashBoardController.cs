@@ -10,6 +10,15 @@ using Newtonsoft.Json;
 using System.Transactions;
 using X.PagedList;
 
+using System.IO;
+using System.Text;
+using System.Data;
+
+using MailKit.Search;
+using iText.Html2pdf;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using System.Globalization;
 
 namespace BakeryShop.Controllers
 {
@@ -24,7 +33,7 @@ namespace BakeryShop.Controllers
         private readonly ICustomerService _customerService;
         private readonly ICheckOutService _checkOutService;
         private readonly IOrderDetailService _orderDetailService;
-
+ 
 
 
         public DashBoardController(IMapper mapper,
@@ -47,6 +56,7 @@ namespace BakeryShop.Controllers
             _customerService = customerService;
             _checkOutService = checkOutService;
             _orderDetailService = orderDetailService;
+    
         }
 
         public async Task<IActionResult> Index()
@@ -329,7 +339,14 @@ namespace BakeryShop.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrderDetail(int orderId)
         {
+            CheckOutBillViewModel checkOutView = await QueryOrderDetail(orderId);
 
+
+            return Json(checkOutView);
+
+        }
+        public async Task<CheckOutBillViewModel> QueryOrderDetail(int orderId)
+        {
 
             var order = await _orderService.GetOrder(orderId);
             var orderDetails = await _orderDetailService.GetOrderDetailsByOrderId(orderId);
@@ -345,6 +362,7 @@ namespace BakeryShop.Controllers
                     Quantity = orderDetail.Quantity,
                     Subtotal = orderDetail.Subtotal,
                     ProductID = product.ProductID,
+                    Price = product.Price,
                     OrderDetailID = orderDetail.OrderID
                 };
                 orderDetailViewModels.Add(orderDetailViewModel);
@@ -369,8 +387,8 @@ namespace BakeryShop.Controllers
                 checkOutView.Note = checkOut.Note;
                 checkOutView.orderDetails = orderDetailViewModels;
             }
-         
-            return Json(checkOutView);
+
+            return checkOutView;
 
         }
         //GetOrderDetailComplete
@@ -393,6 +411,7 @@ namespace BakeryShop.Controllers
                     Quantity = orderDetail.Quantity,
                     Subtotal = orderDetail.Subtotal,
                     ProductID = product.ProductID,
+                    Price = product.Price,
                     OrderDetailID = orderDetail.OrderID
                 };
                 orderDetailViewModels.Add(orderDetailViewModel);
@@ -432,8 +451,122 @@ namespace BakeryShop.Controllers
              order.AccountId = accountId;
              order.IsDone = true;
              await _orderService.UpdateOrder(order);
-           
+            //add report here
             return RedirectToAction("Index");
+        }
+        public async Task<IActionResult> GenerateBillPDFAsync(int orderId)
+        {
+            CheckOutBillViewModel checkOutView = await QueryOrderDetail(orderId);
+            string htmlContent = GenerateHtmlBill(checkOutView);
+            byte[] pdfBytes;
+            using (var pdfStream = new MemoryStream())
+            {
+                PdfDocument pdfDoc = new PdfDocument(new PdfWriter(pdfStream));
+                using (Document document = new Document(pdfDoc))
+                {
+                    ConverterProperties properties = new ConverterProperties();
+                    HtmlConverter.ConvertToPdf(htmlContent, pdfDoc, properties);
+                }
+                pdfBytes = pdfStream.ToArray();
+            }
+            return File(pdfBytes, "application/pdf", "bill.pdf");
+        }
+
+        private string GenerateHtmlBill(CheckOutBillViewModel checkOutView)
+        {
+            string date = checkOutView.OrderDate.HasValue ? checkOutView.OrderDate.Value.ToString("dd/M/yyyy", CultureInfo.InvariantCulture) : "";
+            string htmlBill = $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Tahoma, sans-serif;
+                font-size: 16px;
+                color: #333;
+            }}
+            h1, p, table {{
+                font-family: Tahoma, sans-serif;
+            }}
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 20px;
+            }}
+            th, td {{
+                border: 1px solid #ccc;
+                padding: 8px;
+            }}
+            th {{
+                background-color: #f5f5f5;
+            }}
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Tho Bakery Shop</h1>
+            <p>Địa chỉ: 315 Bình Trung 2, Bình Thạnh Đông, Phú Tân, An Giang</p>
+            <p>Điện thoại: 0917 444 190</p>
+        </header>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã hóa đơn</th>
+                    <th>Tên khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Email</th>
+                    <th>Ngày đặt hàng</th>
+                    <th>Tổng giá</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{checkOutView.IdOrder}</td>
+                    <td>{checkOutView.FirstName}</td>
+                    <td>{checkOutView.PhoneNumber}</td>
+                    <td>{checkOutView.Address}</td>
+                    <td>{checkOutView.Email}</td>
+                    <td>{date}</td>
+                    <td>{checkOutView.TotalPrice}</td>
+                    <td>{checkOutView.Note}</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Chi tiết sản phẩm:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên sản phẩm</th>
+                    <th>Đơn giá</th>
+                    <th>Số lượng</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>";
+
+            foreach (var orderDetail in checkOutView.orderDetails)
+            {
+                htmlBill += $@"
+            <tr>
+                <td>{orderDetail.ProductName}</td>
+                <td>{orderDetail.Price}</td>
+                <td>{orderDetail.Quantity}</td>
+                <td>{orderDetail.Subtotal}</td>
+            </tr>";
+            }
+
+            htmlBill += @"
+            </tbody>
+        </table>
+        <footer>
+            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
+        </footer>
+    </body>
+    </html>";
+
+            return htmlBill;
         }
         public async Task<IActionResult> CheckOutBillDoneByEmployess(int orderId)
         {
