@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repository
 {
-    public interface IReviewRepository : IRepository<Review>
+    public interface IRateRepository : IRepository<Rate>
     {
     }
 
-    public class ReviewRepository : Repository<Review>, IReviewRepository
+    public class RateRepository : Repository<Rate>, IRateRepository
     {
-        public ReviewRepository(EXDbContext context) : base(context)
+        public RateRepository(EXDbContext context) : base(context)
         {
         }
     }

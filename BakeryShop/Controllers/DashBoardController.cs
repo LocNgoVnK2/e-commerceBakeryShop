@@ -33,7 +33,7 @@ namespace BakeryShop.Controllers
         private readonly ICustomerService _customerService;
         private readonly ICheckOutService _checkOutService;
         private readonly IOrderDetailService _orderDetailService;
- 
+        private readonly IRateService _rateService;
 
 
         public DashBoardController(IMapper mapper,
@@ -44,7 +44,8 @@ namespace BakeryShop.Controllers
                                     ICheckOutService checkOutService,
                                     IOrderService orderService,
                                     ICustomerService customerService,
-                                    IOrderDetailService orderDetailService
+                                    IOrderDetailService orderDetailService,
+                                    IRateService rateService
                                     )
         {
             _mapper = mapper;
@@ -56,7 +57,9 @@ namespace BakeryShop.Controllers
             _customerService = customerService;
             _checkOutService = checkOutService;
             _orderDetailService = orderDetailService;
-    
+            _rateService = rateService;
+
+
         }
 
         public async Task<IActionResult> Index()
@@ -476,106 +479,129 @@ namespace BakeryShop.Controllers
         {
             string date = checkOutView.OrderDate.HasValue ? checkOutView.OrderDate.Value.ToString("dd/M/yyyy", CultureInfo.InvariantCulture) : "";
             string htmlBill = $@"
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Tahoma, sans-serif;
-                font-size: 16px;
-                color: #333;
-            }}
-            h1, p, table {{
-                font-family: Tahoma, sans-serif;
-            }}
-            table {{
-                border-collapse: collapse;
-                width: 100%;
-                margin-bottom: 20px;
-            }}
-            th, td {{
-                border: 1px solid #ccc;
-                padding: 8px;
-            }}
-            th {{
-                background-color: #f5f5f5;
-            }}
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>Tho Bakery Shop</h1>
-            <p>Địa chỉ: 315 Bình Trung 2, Bình Thạnh Đông, Phú Tân, An Giang</p>
-            <p>Điện thoại: 0917 444 190</p>
-        </header>
-        <table>
-            <thead>
-                <tr>
-                    <th>Mã hóa đơn</th>
-                    <th>Tên khách hàng</th>
-                    <th>Số điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Email</th>
-                    <th>Ngày đặt hàng</th>
-                    <th>Tổng giá</th>
-                    <th>Ghi chú</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{checkOutView.IdOrder}</td>
-                    <td>{checkOutView.FirstName}</td>
-                    <td>{checkOutView.PhoneNumber}</td>
-                    <td>{checkOutView.Address}</td>
-                    <td>{checkOutView.Email}</td>
-                    <td>{date}</td>
-                    <td>{checkOutView.TotalPrice}</td>
-                    <td>{checkOutView.Note}</td>
-                </tr>
-            </tbody>
-        </table>
-        <h2>Chi tiết sản phẩm:</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tên sản phẩm</th>
-                    <th>Đơn giá</th>
-                    <th>Số lượng</th>
-                    <th>Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>";
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{
+                        font-family: Tahoma, sans-serif;
+                        font-size: 16px;
+                        color: #333;
+                    }}
+                    h1, p, table {{
+                        font-family: Tahoma, sans-serif;
+                    }}
+                    table {{
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin-bottom: 20px;
+                    }}
+                    th, td {{
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                    }}
+                    th {{
+                        background-color: #f5f5f5;
+                    }}
+                </style>
+            </head>
+            <body>
+                <header>
+                    <h1>Tho Bakery Shop</h1>
+                    <p>Địa chỉ: 315 Bình Trung 2, Bình Thạnh Đông, Phú Tân, An Giang</p>
+                    <p>Điện thoại: 0917 444 190</p>
+                </header>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã hóa đơn</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Email</th>
+                            <th>Ngày đặt hàng</th>
+                            <th>Tổng giá</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{checkOutView.IdOrder}</td>
+                            <td>{checkOutView.FirstName}</td>
+                            <td>{checkOutView.PhoneNumber}</td>
+                            <td>{checkOutView.Address}</td>
+                            <td>{checkOutView.Email}</td>
+                            <td>{date}</td>
+                            <td>{checkOutView.TotalPrice}</td>
+                            <td>{checkOutView.Note}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h2>Chi tiết sản phẩm:</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên sản phẩm</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>";
 
-            foreach (var orderDetail in checkOutView.orderDetails)
-            {
-                htmlBill += $@"
-            <tr>
-                <td>{orderDetail.ProductName}</td>
-                <td>{orderDetail.Price}</td>
-                <td>{orderDetail.Quantity}</td>
-                <td>{orderDetail.Subtotal}</td>
-            </tr>";
-            }
+                    foreach (var orderDetail in checkOutView.orderDetails)
+                    {
+                        htmlBill += $@"
+                    <tr>
+                        <td>{orderDetail.ProductName}</td>
+                        <td>{orderDetail.Price}</td>
+                        <td>{orderDetail.Quantity}</td>
+                        <td>{orderDetail.Subtotal}</td>
+                    </tr>";
+                    }
 
-            htmlBill += @"
-            </tbody>
-        </table>
-        <footer>
-            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
-        </footer>
-    </body>
-    </html>";
+                    htmlBill += @"
+                    </tbody>
+                </table>
+                <footer>
+                    <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
+                </footer>
+            </body>
+            </html>";
 
             return htmlBill;
         }
         public async Task<IActionResult> CheckOutBillDoneByEmployess(int orderId)
         {
-            CheckOut checkOut = await _checkOutService.GetCheckOut(orderId);
-            checkOut.IsReceived = true;
-            
-            await _checkOutService.UpdateCheckOut(checkOut);
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                CheckOut checkOut = await _checkOutService.GetCheckOut(orderId);
+                checkOut.IsReceived = true;
+                CheckOutBillViewModel checkOutBillViewModel = await QueryOrderDetail(orderId);
+                try
+                {
+                    foreach (OrderDetailViewModel orderDetail in checkOutBillViewModel.orderDetails)
+                    {
+                        Rate rate = new Rate()
+                        {
+                            ProductId = (int)orderDetail.ProductID,
+                            Star = 5,
+                            StatusRate = true
+                        };
+                        _rateService.InsertRate(rate);
+                    }
 
-            return RedirectToAction("CheckOutCompleteBill");
+                    await _checkOutService.UpdateCheckOut(checkOut);
+                    scope.Complete();
+                    return RedirectToAction("CheckOutCompleteBill");
+                }
+                catch (Exception ex)
+                {
+                    scope.Dispose();
+                    return NotFound();
+                }
+                
+            }
         }
         public async Task<IActionResult> RemoveOrderByAdmin(int orderId)
         {

@@ -15,12 +15,14 @@ namespace BakeryShop.Controllers
         private readonly IMapper _mapper;
         private readonly ICategoryService _categoryService;
         private readonly IProductsService _productsService;
-        public ShopController(ILogger<ShopController> logger, IMapper mapper, ICategoryService categoryService, IProductsService productsService)
+        private readonly IRateService _rateService;
+        public ShopController(ILogger<ShopController> logger, IRateService rateService, IMapper mapper, ICategoryService categoryService, IProductsService productsService)
         {
             _logger = logger;
             _mapper = mapper;
             _categoryService = categoryService;
             _productsService = productsService;
+            _rateService = rateService;
         }
         public async Task<IActionResult> Index(int? page, string searchString, int category, int maxPrice,int minPrice)
         {
@@ -63,8 +65,19 @@ namespace BakeryShop.Controllers
                 foreach (ProductViewModel product in products)
                 {
                     product.Category = categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+                    try
+                    {
+
+                        IQueryable<Rate> rates = await _rateService.GetRatesByProductID((int)product.ProductID);
+                        float starAverage = (float)rates.Average(rate => rate.Star);
+                        product.Star = (starAverage % 1 >= 0.5) ? (int)starAverage + 1 : (int)starAverage;
+                    }
+                    catch
+                    {
+                        product.Star = 5;
+                    }
                 }
-                
+        
                 ShopViewModel viewModel = new ShopViewModel
                 {
                     PagedProducts = await products.ToPagedListAsync(pageNumber, pageSize),

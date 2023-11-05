@@ -7,11 +7,10 @@ namespace BakeryShop.Controllers
 {
     public class RatingProduct : Controller
     {
-        private readonly IReviewService _reviewService;
-        private readonly ICustomerService _customerService;
-        public RatingProduct(IReviewService reviewService,ICustomerService customerService) { 
-            _customerService = customerService;
-            _reviewService = reviewService;
+
+        public RatingProduct() { 
+
+     
         }
         public IActionResult Index(int orderId)
         {
@@ -19,19 +18,8 @@ namespace BakeryShop.Controllers
             return View();
         }
         
-        public async Task<IActionResult> AddRating( RatingViewModel model) { 
-            Customer customer = await _customerService.GetCustomerByPhoneNumber(model.PhoneNumber);
-            Review review = new Review()
-            {
-                Comment = model.Comment,
-                Rating = model.Rating,
-                ProductID = model.ProductID,
-                CustomerID = customer.CustomerId
-                
-            };
-            await _reviewService.InsertReview(review);
-            TempData["ValidationCode"] = customer.ValidationCode;
-            TempData["PhoneNumber"] = customer.PhoneNumber;
+        public async Task<IActionResult> AddRating( ReviewProductViewModel model) { 
+        
             return RedirectToAction("ReviewOrder","Cart");
         }
         

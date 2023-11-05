@@ -1,13 +1,10 @@
 ﻿namespace BakeryShop.Models
 {
-    public class RatingViewModel
+    public class ReviewProductViewModel
     {
-        public int? ReviewID { get; set; }
+        public int? RatingId { get; set; }
         public int? ProductID { get; set; }
         public string? ProductName { get; set; }
-        public string? PhoneNumber { get; set; }
-        public int? Rating { get; set; }
-
         public string? Comment { get; set; }
     }
 }

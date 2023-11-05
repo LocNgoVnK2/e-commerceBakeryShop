@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Entities
 {
+    // why we set public , easy to access this obj in other class , Minimizing dependencies between classes
     [Table("Accounts")]
     public class Accounts
     {

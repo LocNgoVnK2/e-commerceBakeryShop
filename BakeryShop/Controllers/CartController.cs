@@ -150,7 +150,7 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-            // if cusmer exist then make update this cus
+        
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try

@@ -62,9 +62,10 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 //checkout 
 builder.Services.AddScoped<ICheckOutRepository, CheckOutRepository>();
 builder.Services.AddScoped<ICheckOutService, CheckOutService>();
-//review 
-builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
+
+//Rate 
+builder.Services.AddScoped<IRateRepository, RateRepository>();
+builder.Services.AddScoped<IRateService, RateService>();
 //until
 
 
@@ -72,7 +73,6 @@ builder.Services.AddReCaptcha(options =>
 {
     options.SiteKey = "6LeWRegoAAAAALNzl8rzOZayHsUBcRlKVZD9jW5C";
     //khi mở file https://keep.google.com/
-
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>

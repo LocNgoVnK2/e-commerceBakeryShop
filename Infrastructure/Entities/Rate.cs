@@ -8,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Entities
 {
-    [Table("Reviews")]
-    public class Review
+    [Table("Rates")]
+    public class Rate
     {
         [Key]
-        public int? ReviewID { get; set; }
-        public int? ProductID { get; set; }
-        public int? CustomerID { get; set; }
-        public int? Rating { get; set; }
-   
-        public string? Comment { get; set; }
+        public int? RatingId { get; set; }
+        public int Star { get; set; }
+        public int ProductId { get; set; }
+        public bool? StatusRate { get; set; }
     }
 }

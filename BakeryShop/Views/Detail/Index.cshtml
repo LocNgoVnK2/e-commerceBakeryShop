@@ -1,6 +1,21 @@
 ﻿@model ProductViewModel
 
+<style>
 
+    .panel-heading {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .panel-body b {
+        font-size: 20px;
+    }
+
+    .panel-body p {
+        font-size: 18px;
+        padding-left: 12px;
+    }
+</style>
    
         <div class="single-product-area section-padding-100 clearfix">
             <div class="container-fluid">
@@ -43,18 +58,14 @@
                                 <a >
                                     <h6>@Model.ProductName</h6>
                                 </a>
-                                <!-- Ratings & Review 
-
-                                xử lí load reating ở đây
-
-                                -->
+                              
                                 <div class="ratings-review mb-15 d-flex align-items-center justify-content-between">
                                     <div class="ratings">
-                                        <i class="fa fa-star" aria-hidden="true"></i>
-                                        <i class="fa fa-star" aria-hidden="true"></i>
-                                        <i class="fa fa-star" aria-hidden="true"></i>
-                                        <i class="fa fa-star" aria-hidden="true"></i>
-                                        <i class="fa fa-star" aria-hidden="true"></i>
+                                        @for (int i = 1; i <= @Model.Star;i++)
+                                        {
+                                            <i class="fa fa-star" aria-hidden="true"></i>
+                                        }
+                              
                                     </div>
                                   
                                 </div>
@@ -81,7 +92,32 @@
 
                         </div>
                     </div>
+            <div class="panel panel-primary" style="width:100%; height: 400px; overflow-y: scroll;">
+                <div class="panel-heading">
+                    <span class="glyphicon glyphicon-comment"></span>
+                    Bình luận về sản phẩm
                 </div>
+                <div class="panel-body">
+                    <b>Ahmed</b>
+                    <p>hello there , this is example </p>
+                    <hr>
+
+                    <b>Mike</b>
+                    <p>hello there , this is example </p>
+                    <hr>
+
+                    <b>John</b>
+                    <p>hello there , this is example </p>
+                    <hr>
+
+                    <b>Mike</b>
+                    <p>hello there , this is example </p>
+                    <hr>
+
+                </div>
+            </div>
+                </div>
+                
             </div>
         </div>
         <!-- Product Details Area End -->

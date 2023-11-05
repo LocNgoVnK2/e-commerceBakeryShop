@@ -32,6 +32,7 @@ namespace Infrastructure.EF
 
         public DbSet<Customer> customers { get; set; }
         public DbSet<CheckOut> checkOuts { get; set; }
-        public DbSet<Review> reviews { get; set; }
+        public DbSet<Rate> rates { get; set; }
+
     }
 }
