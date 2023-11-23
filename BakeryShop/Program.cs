@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Entities;
 using AspNetCore.ReCaptcha;
-
+using BakeryShop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +66,10 @@ builder.Services.AddScoped<ICheckOutService, CheckOutService>();
 //Rate 
 builder.Services.AddScoped<IRateRepository, RateRepository>();
 builder.Services.AddScoped<IRateService, RateService>();
+
+// VN PAY 
+builder.Services.AddScoped<IVnPayService, VnPayService>();
+
 //until
 
 
@@ -73,6 +77,7 @@ builder.Services.AddReCaptcha(options =>
 {
     options.SiteKey = "6LeWRegoAAAAALNzl8rzOZayHsUBcRlKVZD9jW5C";
     //khi mở file https://keep.google.com/
+    
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>

@@ -1,0 +1,33 @@
+﻿@model PaymentResponseModel
+
+@{
+    ViewData["Title"] = "Hóa đơn điện tử";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<dl class="row">
+    <dt class="col-sm-2">Thông tin giao dịch</dt>
+    <dd class="col-sm-10">@Model.OrderDescription</dd>
+
+    <dt class="col-sm-2">Mã phiên giao dịch</dt>
+    <dd class="col-sm-10">@Model.TransactionId</dd>
+
+    <dt class="col-sm-2">Order ID</dt>
+    <dd class="col-sm-10">@Model.OrderId</dd>
+
+    <dt class="col-sm-2">Phương thức thanh toán</dt>
+    <dd class="col-sm-10">@Model.PaymentMethod</dd>
+
+    <dt class="col-sm-2">Mã thanh toán</dt>
+    <dd class="col-sm-10">@Model.PaymentId</dd>
+
+    <dt class="col-sm-2">Trạng thái</dt>
+    <dd class="col-sm-10">@Model.Success</dd>
+
+    <dt class="col-sm-2">Token</dt>
+    <dd class="col-sm-10">@Model.Token</dd>
+
+    <dt class="col-sm-2">VnPay Response Code</dt>
+    <dd class="col-sm-10">@Model.VnPayResponseCode</dd>
+</dl>

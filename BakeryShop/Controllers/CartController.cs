@@ -1,4 +1,5 @@
 ﻿using BakeryShop.Models;
+using BakeryShop.Services;
 using Infrastructure.Entities;
 using Infrastructure.Service;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +19,15 @@ namespace BakeryShop.Controllers
         private readonly ICustomerService _customerService;
         private readonly ICheckOutService _checkOutService;
         private readonly Infrastructure.Service.IEmailService emailService;
-        public CartController(IProductsService productsService, IOrderDetailService orderDetailService, IOrderService orderService, ICheckOutService checkOutService, ICustomerService customerService, Infrastructure.Service.IEmailService emailService)
+        private readonly IVnPayService _vnPayService;
+
+        public CartController(IProductsService productsService,
+                              IOrderDetailService orderDetailService,
+                              IOrderService orderService,
+                              ICheckOutService checkOutService,
+                              ICustomerService customerService,
+                              Infrastructure.Service.IEmailService emailService,
+                              IVnPayService vnPayService)
         {
             this._productsService = productsService;
             _orderDetailService = orderDetailService;
@@ -26,6 +35,7 @@ namespace BakeryShop.Controllers
             _customerService = customerService;
             _checkOutService = checkOutService;
             this.emailService = emailService;
+            _vnPayService = vnPayService;
         }
         public async Task<ActionResult> Index(int id, int quantity)
         {
@@ -155,7 +165,7 @@ namespace BakeryShop.Controllers
             {
                 try
                 {
-
+                    Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                     Customer customer = new Customer()
                     {
                         Address = checkOutView.Address,
@@ -172,6 +182,11 @@ namespace BakeryShop.Controllers
                     checkOut.IsReceived = false;
                     checkOut.Note = checkOutView.Note;
                     await _checkOutService.InsertCheckOut(checkOut);
+
+                    //set status payment
+                    order.PaidStatus = true;
+                    await _orderService.UpdateOrder(order);
+
                     scope.Complete();
                     HttpContext.Session.Remove("cart");
 
@@ -372,6 +387,64 @@ namespace BakeryShop.Controllers
       
            
         }
-   
+
+
+
+        public async Task<IActionResult> CreatePaymentUrl(CheckOutViewModel checkOutView)
+        {
+        
+
+
+            Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
+
+            PaymentInformationModel model = new PaymentInformationModel();
+            model.Name = checkOutView.FirstName +" "+ checkOutView.LastName;
+            model.Amount = (double)order.TotalAmount;
+            //model.Amount = 200000;
+            model.OrderDescription = checkOutView.Note;
+            var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    Customer customer = new Customer()
+                    {
+                        Address = checkOutView.Address,
+                        Email = checkOutView.Email,
+                        FirstName = checkOutView.FirstName,
+                        LastName = checkOutView.LastName,
+                        PhoneNumber = checkOutView.PhoneNumber,
+                    };
+                    await _customerService.InsertCustomer(customer);
+                    CheckOut checkOut = new CheckOut();
+                    checkOut.IdOrder = checkOutView.IdOrder;
+                    checkOut.CustomerId = customer.CustomerId;
+                    checkOut.IsReceived = false;
+                    checkOut.Note = checkOutView.Note;
+                    await _checkOutService.InsertCheckOut(checkOut);
+
+                    //set status payment
+                    order.PaidStatus = true;
+                    await _orderService.UpdateOrder(order);
+
+                    scope.Complete();
+                    HttpContext.Session.Remove("cart");
+                }
+                catch (Exception ex)
+                {
+                    scope.Dispose();
+                }
+            }
+
+            return Redirect(url);
+        }
+      
+        public IActionResult PaymentCallback()
+        {
+            var response = _vnPayService.PaymentExecute(Request.Query);
+
+            return View(response);
+        }
+
     }
 }
