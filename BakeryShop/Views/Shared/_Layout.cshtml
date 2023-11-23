@@ -25,11 +25,17 @@
     <link rel="icon" href="img/core-img/favicon.ico">
 
     <!-- Core Style CSS -->
+    
     <link href="https://fonts.googleapis.com/css?family=Dancing+Script" rel="stylesheet">
-
+    
     <link href="~/formain/css/core-style.css" rel="stylesheet" />
   
-
+        <style>
+        body {
+            font-family: sans-serif;
+           
+        }
+    </style>
 </head>
 <section class="newsletter-area section-padding-100-0">
     <style>
@@ -43,6 +49,7 @@
             max-width: 100%;
             height: auto;
         }
+
     </style>
     <div class="container">
         <img src="~/formain/img/core-img/backgr.png" />
@@ -119,12 +126,16 @@
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Shop" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
                         <a href="@Url.Action("Index", "Shop")">Sản phẩm</a>
                     </li>
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Cart" && ViewContext.RouteData.Values["Action"].ToString() == "ReviewOrder" ? "active" : "")">
+                        <a href="@Url.Action("ValidationReviewOrder", "Cart")">Đặt hàng riêng</a>
+                    </li>
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Cart" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
                         <a href="@Url.Action("Index", "Cart")">Giỏ hàng</a>
                     </li>
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Cart" && ViewContext.RouteData.Values["Action"].ToString() == "ReviewOrder" ? "active" : "")">
                         <a href="@Url.Action("ValidationReviewOrder", "Cart")">Tra cứu đơn hàng</a>
                     </li>
+                    
                 </ul>
             </nav>
             <!-- Button Group -->
@@ -240,12 +251,17 @@
                             </nav>
                         </div>
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3922.1394646485574!2d105.25870136069345!3d10.568257812955315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310a17adc4c1a8c5%3A0xbb3c0c027cb86257!2zQsOhbmggS2VtIFRI4buM!5e0!3m2!1svi!2s!4v1688026808009!5m2!1svi!2s" width="500" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-
+                        <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+                        <df-messenger intent="WELCOME"
+                                      chat-title="ThoBakeryShop"
+                                      agent-id="7cbd7c8d-ad83-4e69-a9f4-bb65832f10bc"
+                                      language-code="en"></df-messenger>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
+
     <!-- ##### Footer Area End ##### -->
     <!-- ##### jQuery (Necessary for All JavaScript Plugins) ##### -->
     <script src="~/formain/js/jquery/jquery-2.2.4.min.js"></script>

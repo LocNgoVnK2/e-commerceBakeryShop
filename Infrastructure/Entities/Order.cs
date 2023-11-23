@@ -18,5 +18,6 @@ namespace Infrastructure.Entities
 
         public int? AccountId { get; set; } // khi account này khác null có nghĩa là đơn hàng đã dc xác nhận 
         public bool? IsDone { get; set; }
+        public bool? PaidStatus { get; set; }
     }
 }
