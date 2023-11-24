@@ -13,5 +13,6 @@
         public string? Position { get; set;}
         public string? PhoneNumber { get; set; }
         public bool? IsActivate { get; set;}
+        public int? IdStore { get; set; }
     }
 }

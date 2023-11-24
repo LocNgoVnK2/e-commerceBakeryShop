@@ -34,5 +34,7 @@ namespace Infrastructure.Entities
         [Column("EmployeeID")]
         public int? EmployeeID { get; set; }
 
+        public int? IdStore { get; set; }
+
     }
 }

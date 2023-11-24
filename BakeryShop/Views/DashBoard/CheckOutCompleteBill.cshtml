@@ -87,18 +87,29 @@
                                 <th scope="col">Địa chỉ</th>
                                 <th scope="col">Số Diện thoại</th>
                                 <th scope="col">Thành tiền</th>
+                                <th scope="col">Trạng thái thanh toán</th>
                                 <th scope="col">Chi tiết đơn hàng</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var order in Model)
                             {
-                                <tr>
+                                <tr style="background-color: @(((bool)order.PaymentStatus) ? "#CCFFCC":"white");">
                                     <th scope="row">@order.IdOrder</th>
                                     <td>@order.FirstName</td>
                                     <td>@order.Address</td>
                                     <td>@order.PhoneNumber</td>
                                     <td>@order.TotalPrice</td>
+                                    <td>
+                                        @if ((bool)order.PaymentStatus)
+                                        {
+                                            <span>Đã thanh toán</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Chưa thanh toán</span>
+                                        }
+                                    </td>
                                     <td>
                                         <button class="btn btn-primary open-order-detail-button" data-order-id="@order.IdOrder">Chi tiết đơn hàng</button>
                                     </td>

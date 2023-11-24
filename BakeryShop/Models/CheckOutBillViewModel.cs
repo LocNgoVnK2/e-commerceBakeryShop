@@ -22,6 +22,9 @@ namespace BakeryShop.Models
         public string? PhoneNumber { get; set; }
         public int? AccountID { get; set; }
         public string? employeeName { get; set; }
+
+        public bool? PaymentStatus { get; set; }
+        public int? IdStore { get; set; }
         public List<OrderDetailViewModel>? orderDetails { get; set; }
     }
 }

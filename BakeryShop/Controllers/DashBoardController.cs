@@ -58,8 +58,6 @@ namespace BakeryShop.Controllers
             _checkOutService = checkOutService;
             _orderDetailService = orderDetailService;
             _rateService = rateService;
-
-
         }
 
         public async Task<IActionResult> Index()
@@ -88,6 +86,7 @@ namespace BakeryShop.Controllers
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -123,6 +122,7 @@ namespace BakeryShop.Controllers
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -169,6 +169,7 @@ namespace BakeryShop.Controllers
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus
                     };
                     checkOutViewModels.Add(checkOutView);
 

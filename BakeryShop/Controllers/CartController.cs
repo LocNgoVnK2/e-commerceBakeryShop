@@ -1,11 +1,13 @@
 ﻿using BakeryShop.Models;
 using BakeryShop.Services;
+using BakeryShop.Utils;
 using Infrastructure.Entities;
 using Infrastructure.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NETCore.MailKit.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 using System.Transactions;
 
@@ -20,6 +22,7 @@ namespace BakeryShop.Controllers
         private readonly ICheckOutService _checkOutService;
         private readonly Infrastructure.Service.IEmailService emailService;
         private readonly IVnPayService _vnPayService;
+        private readonly IConfiguration _configuration;
 
         public CartController(IProductsService productsService,
                               IOrderDetailService orderDetailService,
@@ -27,7 +30,8 @@ namespace BakeryShop.Controllers
                               ICheckOutService checkOutService,
                               ICustomerService customerService,
                               Infrastructure.Service.IEmailService emailService,
-                              IVnPayService vnPayService)
+                              IVnPayService vnPayService,
+                              IConfiguration configuration)
         {
             this._productsService = productsService;
             _orderDetailService = orderDetailService;
@@ -36,6 +40,7 @@ namespace BakeryShop.Controllers
             _checkOutService = checkOutService;
             this.emailService = emailService;
             _vnPayService = vnPayService;
+            _configuration = configuration;
         }
         public async Task<ActionResult> Index(int id, int quantity)
         {
@@ -105,7 +110,7 @@ namespace BakeryShop.Controllers
         }
         public async Task<ActionResult> CheckOutBill()
         {
-           
+
             var cartItemData = HttpContext.Session.GetString("cart");
             List<CartItemVewModel> cartItemList = new List<CartItemVewModel>();
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -160,9 +165,11 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-        
+            string km = await DistanceCalculate("Bình Trung 2, Bình Thạnh Đông, Phú Tân, An Giang, Vietnam", checkOutView.Address);
+            double nkm = Utils.Utils.ExtractDistance(km);
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+
                 try
                 {
                     Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
@@ -184,7 +191,7 @@ namespace BakeryShop.Controllers
                     await _checkOutService.InsertCheckOut(checkOut);
 
                     //set status payment
-                    order.PaidStatus = true;
+                    order.PaidStatus = false;
                     await _orderService.UpdateOrder(order);
 
                     scope.Complete();
@@ -204,25 +211,25 @@ namespace BakeryShop.Controllers
         public async Task<ActionResult> ReviewOrder(string validationCode, string phoneNumber)
         {
 
-            if ((validationCode==null&& phoneNumber==null)&&(TempData["ValidationCode"]!=null && TempData["PhoneNumber"] != null))
+            if ((validationCode == null && phoneNumber == null) && (TempData["ValidationCode"] != null && TempData["PhoneNumber"] != null))
             {
-                 validationCode = TempData["ValidationCode"] as string;
-                 phoneNumber = TempData["PhoneNumber"] as string;
+                validationCode = TempData["ValidationCode"] as string;
+                phoneNumber = TempData["PhoneNumber"] as string;
             }
-            if (validationCode == null )
+            if (validationCode == null)
             {
                 return View();
             }
-            else 
+            else
             {
                 List<CheckOutViewModel> checkOutViewModels = new List<CheckOutViewModel>();
-                Customer customer = await _customerService.GetCustomerByPhoneNumber(phoneNumber); 
+                Customer customer = await _customerService.GetCustomerByPhoneNumber(phoneNumber);
                 // get last record of this customer to validation
 
-                 if (customer != null && customer.ValidationCode==validationCode)
+                if (customer != null && customer.ValidationCode == validationCode)
                 {
                     List<Customer> customers = await _customerService.GetCustomersByPhoneNumber(phoneNumber);
-                    foreach( Customer cus in  customers )
+                    foreach (Customer cus in customers)
                     {
                         List<CheckOut> checkOuts = await _checkOutService.GetListCheckOutByCustomerId((int)cus.CustomerId);
                         foreach (CheckOut checkOut in checkOuts)
@@ -247,13 +254,13 @@ namespace BakeryShop.Controllers
                     return View(checkOutViewModels);
                 }
             }
-           
-          return RedirectToAction("ValidationReviewOrder");
+
+            return RedirectToAction("ValidationReviewOrder");
         }
         public async Task<ActionResult> ValidationReviewOrder()
         {
-          
-                return View();
+
+            return View();
 
         }
         //ValidateUser
@@ -271,8 +278,8 @@ namespace BakeryShop.Controllers
 
                     customer.ValidationCode = GenerateRandomString(6);
                     await _customerService.UpdateCustomer(customer);
-                   //sendmail
-                    string subject = "Xin chào: " + customer.FirstName+" "+customer.LastName + " | Email đăng nhập Tho Bakery";
+                    //sendmail
+                    string subject = "Xin chào: " + customer.FirstName + " " + customer.LastName + " | Email đăng nhập Tho Bakery";
                     string content = "Đây là email gửi tự động bởi hệ thống xác minh, Mã xác nhận của bận :" + customer.ValidationCode;
                     var message = new EmailMessage(customer.Email, subject, content);
                     emailService.SendEmail(message);
@@ -280,7 +287,8 @@ namespace BakeryShop.Controllers
                     return RedirectToAction("ReviewOrder", new { phoneNumber = phoneNumber });
 
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return RedirectToAction("ValidationReviewOrder");
             }
@@ -304,7 +312,7 @@ namespace BakeryShop.Controllers
                 var cartItemToUpdate = cartItemList.FirstOrDefault(item => item.ProductId == productId);
                 if (cartItemToUpdate != null)
                 {
-                  
+
                     cartItemToUpdate.Quantity = newQuantity;
                     string serializedItemList = JsonConvert.SerializeObject(cartItemList);
                     HttpContext.Session.SetString("cart", serializedItemList);
@@ -360,10 +368,10 @@ namespace BakeryShop.Controllers
                     CheckOut checkOut = await _checkOutService.GetCheckOut(orderId);
                     Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
                     Customer flagCustomer = await _customerService.GetCustomerByPhoneNumber(customer.PhoneNumber); // lấy last mới đúng là status của customer đang login
-                    validationCode= flagCustomer.ValidationCode;
-                    phoneNumber= flagCustomer.PhoneNumber;
+                    validationCode = flagCustomer.ValidationCode;
+                    phoneNumber = flagCustomer.PhoneNumber;
                     IQueryable<OrderDetail> orderDetails = await _orderDetailService.GetOrderDetailsByOrderId(orderId);
-                  
+
                     await _checkOutService.DeleteCheckOut(checkOut);
                     foreach (OrderDetail detail in orderDetails)
                     {
@@ -383,25 +391,25 @@ namespace BakeryShop.Controllers
                     return NotFound();
                 }
             }
-          
-      
-           
+
+
+
         }
 
 
 
         public async Task<IActionResult> CreatePaymentUrl(CheckOutViewModel checkOutView)
         {
-        
+
 
 
             Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
 
             PaymentInformationModel model = new PaymentInformationModel();
-            model.Name = checkOutView.FirstName +" "+ checkOutView.LastName;
+            model.Name = checkOutView.FirstName + " " + checkOutView.LastName;
             model.Amount = (double)order.TotalAmount;
             //model.Amount = 200000;
-            model.OrderDescription = checkOutView.Note;
+            model.OrderDescription = "thanh toán cho hóa đơn: " + checkOutView.IdOrder + " với giá :";
             var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
@@ -438,7 +446,7 @@ namespace BakeryShop.Controllers
 
             return Redirect(url);
         }
-      
+
         public IActionResult PaymentCallback()
         {
             var response = _vnPayService.PaymentExecute(Request.Query);
@@ -446,5 +454,43 @@ namespace BakeryShop.Controllers
             return View(response);
         }
 
+
+        public async Task<string> DistanceCalculate(string origins, string destinations)
+        {
+
+            string apiUrl = "https://api.distancematrix.ai/maps/api/";
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    string apiKey = _configuration["DistancematrixSecretKey"];
+
+                    string request = apiUrl + "distancematrix/json?origins=" + origins + "&destinations=" + destinations + "&key=" + apiKey;
+                    HttpResponseMessage response = await client.GetAsync(request);
+                    if (response.IsSuccessStatusCode)
+                    {
+                       
+
+                        string responseData = await response.Content.ReadAsStringAsync();
+                        JToken jsonToken = JToken.Parse(responseData);
+
+                        // Lấy giá trị số kilomet từ JSON
+                        string distanceText = jsonToken["rows"][0]["elements"][0]["distance"]["text"].ToString();
+
+
+                        return distanceText;
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return "Error: " + ex.Message;
+                }
+            }
+
+        }
     }
 }

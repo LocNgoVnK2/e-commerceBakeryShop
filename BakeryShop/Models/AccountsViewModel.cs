@@ -18,5 +18,8 @@ namespace BakeryShop.Models
         public string? Role { get; set; }
         public bool? IsActivate { get; set; }
         public int? EmployeeID { get; set; }
+
+        public int? IdStore { get; set; }
+       
     }
 }
