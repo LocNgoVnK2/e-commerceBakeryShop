@@ -97,7 +97,8 @@ namespace BakeryShop.Controllers
 
         }
         //CheckOutCompleteBill
-        public async Task<IActionResult> CheckOutCompleteBill(string inforOrder)
+        public async Task<IActionResult> CheckOutCompleteBill(string inforOrder) // load ở view chop nhan vien hoan thanh dpon hang
+
         {
 
             List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
@@ -122,7 +123,9 @@ namespace BakeryShop.Controllers
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus
+                        PaymentStatus = (bool)order.PaidStatus,
+                        DeliveryStatus = order.DeliveryId == null ? false : true
+
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -144,14 +147,27 @@ namespace BakeryShop.Controllers
             return View(checkOutViewModels);
 
         }
-        public async Task<IActionResult> CheckOutCompleteForAdmin()
+        public async Task<IActionResult> CheckOutCompleteForAdmin(string searchString )// lay hoa don cho tk admin
         {
-
             List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
 
             var orders = await _orderService.GetOrders();
-            orders = orders.Where(e => e.IsDone == true).Select(e => e);
+            if (!string.IsNullOrEmpty(searchString))
+            {
+               
+                orders = orders
+                    .Where(order =>
+                        order.OrderID.ToString().Contains(searchString) ||
+                        order.OrderDate.ToString().Contains(searchString) 
+ 
 
+                    );
+            }
+            else
+            {
+                orders = orders.Where(e => e.IsDone == true).Select(e => e);
+            }
+          
             foreach (Order order in orders)
             {
                 CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
@@ -572,10 +588,16 @@ namespace BakeryShop.Controllers
 
             return htmlBill;
         }
-        public async Task<IActionResult> CheckOutBillDoneByEmployess(int orderId)
+        public async Task<IActionResult> CheckOutBillDoneByEmployess(int orderId)// thêm cái set lại đã thanht oán ở đây
         {
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                Order order = await _orderService.GetOrder(orderId);
+                if (order.PaidStatus == false)
+                {
+                    order.PaidStatus = true;
+                }
+                await _orderService.UpdateOrder(order);
                 CheckOut checkOut = await _checkOutService.GetCheckOut(orderId);
                 checkOut.IsReceived = true;
                 CheckOutBillViewModel checkOutBillViewModel = await QueryOrderDetail(orderId);
@@ -589,7 +611,7 @@ namespace BakeryShop.Controllers
                             Star = 5,
                             StatusRate = true
                         };
-                        _rateService.InsertRate(rate);
+                       await _rateService.InsertRate(rate);
                     }
 
                     await _checkOutService.UpdateCheckOut(checkOut);

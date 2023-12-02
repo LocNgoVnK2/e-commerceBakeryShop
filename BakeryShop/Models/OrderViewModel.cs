@@ -12,5 +12,6 @@ namespace BakeryShop.Models
         public bool? IsDone { get; set; }
         public List<OrderDetail>? orderDetails { get; set; }
         public bool? PaidStatus { get; set; }
+        public int? DeliveryId { get; set; }
     }
 }

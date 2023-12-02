@@ -75,10 +75,9 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 builder.Services.AddReCaptcha(options =>
 {
-    options.SiteKey = "6LeWRegoAAAAALNzl8rzOZayHsUBcRlKVZD9jW5C";
+
     //khi mở file https://keep.google.com/
-
-
+ 
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>

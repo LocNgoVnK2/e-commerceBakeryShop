@@ -44,7 +44,6 @@ namespace BakeryShop.Controllers
             
             if (!ModelState.IsValid)
             {
-        
                 ViewBag.ErrorMessage = "reCAPTCHA validation failed. Bạn phải đánh dấu để kiểm tra không phải là robot.";
                 return View(accounts);
             }

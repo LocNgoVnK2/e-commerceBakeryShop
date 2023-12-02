@@ -30,5 +30,6 @@ namespace BakeryShop.Models
             public IEnumerable<CategoryViewModel>? Categories { get; set; }
           
             public int? Star { get; set; }
-        }
+            public int? Quantity { get; set; }
+    }
 }

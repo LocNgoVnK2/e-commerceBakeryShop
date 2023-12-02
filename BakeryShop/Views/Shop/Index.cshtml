@@ -4,8 +4,14 @@
 @using X.PagedList
 @using X.PagedList.Web.Common
 @using X.PagedList.Mvc.Core
-@model ShopViewModel
 
+@model ShopViewModel
+@{
+    var searchString = Context.Request.Query["searchString"];
+    var category = Context.Request.Query["category"];
+    var minPrice = Context.Request.Query["minPrice"];
+    var maxPrice = Context.Request.Query["maxPrice"];
+}
 <!DOCTYPE html>
 <html lang="en">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -177,36 +183,36 @@
                 <div class="row">
                     <div class="col-12">
                         <!-- Pagination -->
-                        <nav aria-label="navigation">
-                            <ul class="pagination justify-content-end mt-50">
-                                @if (Model.PagedProducts.HasPreviousPage)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { page = 1 })">First</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageNumber - 1 })">Pre</a>
-                                    </li>
-                                }
+                       <nav aria-label="navigation">
+    <ul class="pagination justify-content-end mt-50">
+        @if (Model.PagedProducts.HasPreviousPage)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { page = 1, searchString, category, minPrice, maxPrice })">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageNumber - 1, searchString, category, minPrice, maxPrice })">Pre</a>
+            </li>
+        }
 
-                                @for (int i = 1; i <= Model.PagedProducts.PageCount; i++)
-                                {
-                                    <li class="page-item @(i == Model.PagedProducts.PageNumber ? "active" : "")">
-                                        <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
-                                    </li>
-                                }
+        @for (int i = 1; i <= Model.PagedProducts.PageCount; i++)
+        {
+            <li class="page-item @(i == Model.PagedProducts.PageNumber ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { page = i, searchString, category, minPrice, maxPrice })">@i</a>
+            </li>
+        }
 
-                                @if (Model.PagedProducts.HasNextPage)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageNumber + 1 })">Next</a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageCount })">Last</a>
-                                    </li>
-                                }
-                            </ul>
-                        </nav>
+        @if (Model.PagedProducts.HasNextPage)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageNumber + 1, searchString, category, minPrice, maxPrice })">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { page = Model.PagedProducts.PageCount, searchString, category, minPrice, maxPrice })">Last</a>
+            </li>
+        }
+    </ul>
+</nav>
                     </div>
                 </div>
             </div>

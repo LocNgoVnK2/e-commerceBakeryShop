@@ -32,6 +32,7 @@ namespace Infrastructure.Entities
         public int CategoryId { get; set; }
 
         public bool? IsUsed { get; set; } = true;
+        public int? Quantity { get; set; }
 
     }
 }

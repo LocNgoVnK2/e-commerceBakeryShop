@@ -25,6 +25,8 @@ namespace BakeryShop.Models
 
         public bool? PaymentStatus { get; set; }
         public int? IdStore { get; set; }
+
+        public bool? DeliveryStatus { get; set; }
         public List<OrderDetailViewModel>? orderDetails { get; set; }
     }
 }

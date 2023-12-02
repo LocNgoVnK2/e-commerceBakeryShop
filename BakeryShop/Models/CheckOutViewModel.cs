@@ -21,6 +21,7 @@ namespace BakeryShop.Models
         public string? Address { get; set; }
         public string? PhoneNumber { get; set; }
         public int? IdStore { get; set; }
+        public int? DeliveryId { get; set; }
 
 
 
