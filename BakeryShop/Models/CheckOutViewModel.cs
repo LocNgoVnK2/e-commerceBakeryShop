@@ -1,5 +1,7 @@
 ﻿
 
+using Infrastructure.Entities;
+
 namespace BakeryShop.Models
 {
     public class CheckOutViewModel
@@ -22,8 +24,8 @@ namespace BakeryShop.Models
         public string? PhoneNumber { get; set; }
         public int? IdStore { get; set; }
         public int? DeliveryId { get; set; }
-
-
+        
+        public List<RollBackViewModel>? RollBacks { get; set; }
 
     }
 }

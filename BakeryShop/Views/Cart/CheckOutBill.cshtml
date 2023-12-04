@@ -56,3 +56,37 @@
         </div>
     </div>
 </div>
+<script>
+    var isOrderCancelled = false;
+    var isFormSubmitted = false;
+
+    window.addEventListener('beforeunload', function (event) {
+        if (!isOrderCancelled && !isFormSubmitted) {
+            event.preventDefault();
+            cancelOrder();
+        }
+    });
+
+    // Thêm sự kiện cho nút submit
+    document.querySelector('form').addEventListener('submit', function () {
+        isFormSubmitted = true;
+    });
+
+    function cancelOrder() {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("RollBackOrder", "Cart")",
+            success: function () {
+                console.error("Hooạt động ngon ");
+            },
+            error: function (error) {
+                console.error("Lỗi khi gửi yêu cầu xóa sản phẩm: " + error);
+            },
+            complete: function () {
+                isOrderCancelled = true;
+                // Allow the browser to unload the page
+                window.location.href = "about:blank";
+            }
+        });
+    }
+</script>

@@ -1,4 +1,6 @@
 ﻿@model List<CartItemVewModel>
+@using System.Web
+@using Newtonsoft.Json;
 @{
     Double totalPrice = 0;
     foreach (CartItemVewModel cartItem in Model)
@@ -42,13 +44,14 @@
                                         <td class="price">
                                             <span>@item.Price</span>
                                         </td>
+            
                                         <td class="qty">
                                             <div class="qty-btn d-flex">
                                      
                                                 <div class="quantity">
                                                     <span class="qty-minus" onclick="decreaseQuantity(@item.ProductId);"><i class="fa fa-minus" aria-hidden="true"></i></span>
-                                                    <input type="number" class="qty-text" id="qty-@item.ProductId" step="1" min="1" max="300" name="quantity" value="@item.Quantity">
-                                                    <span class="qty-plus" onclick="increaseQuantity(@item.ProductId);"><i class="fa fa-plus" aria-hidden="true"></i></span>
+                                                    <input type="number" class="qty-text" id="qty-@item.ProductId" step="1" min="1" max="@item.AvailableQuantity" name="quantity" value="@item.Quantity" oninput="validateQuantity(this)">
+                                                    <span class="qty-plus" onclick="increaseQuantity(@item.ProductId, @item.AvailableQuantity);"><i class="fa fa-plus" aria-hidden="true"></i></span>
                                                 </div>
                                             </div>
                                         </td>
@@ -66,15 +69,29 @@
                             </table>
                         </div>
                     </div>
+
+            @{
+
+                string cartItemCountJSON = Context.Session.GetString("cart");
+                int cartItemCount = 0;
+                if (!string.IsNullOrEmpty(cartItemCountJSON))
+                {
+                    var items = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemCountJSON);
+                    cartItemCount = items.Count;
+                }
+
+            }
                     <div class="col-12 col-lg-4">
                         <h5>Cart Total</h5>
                         <ul class="summary-table">
                             <li><span>Tổng cộng:</span> <span id="totalPrice">@totalPrice VND</span></li>
-                            
+                            <li><span>Số sản phẩm:</span> <span id="totalPrice">@cartItemCount </span></li>
                         </ul>
-                    @if (Model.Count == 0)
+             
+               
+                @if (Model.Count == 0 && cartItemCount==0)
                     {
-                        <div class="cart-btn mt-100 ajax-to-checkout">
+                            <div class="cart-btn mt-100 ajax-to-checkout">
                                 <a  class="btn amado-btn w-100">Thanh toán</a>
                             </div>
                     } else
@@ -93,6 +110,24 @@
 
 @section checkout{
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Kiểm tra xem TempData có tồn tại không
+            var outOfStockProducts = '@TempData["OutOfStockProducts"]';
+            if (outOfStockProducts) {
+                // Hiển thị SweetAlert với thông báo sản phẩm hết số lượng
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: 'Các sản phẩm sau đã hết số lượng: ' + outOfStockProducts,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        });
+    </script>
+
     <script>
         $(document).ready(function () {
             $(".ajax-to-checkout").click(function (event) {
@@ -101,7 +136,7 @@
                 Swal.fire({
                     position: 'top-end',
                     icon: 'warning',
-                    title: 'Bạn không có sản phẩm nào  để thanh toán',
+                    title: 'Bạn không có sản phẩm nào để thanh toán',
                     showConfirmButton: false,
                     timer: 1500
                 });
@@ -110,6 +145,18 @@
         });
     </script>
     <script>
+
+        function validateQuantity(input) {
+            var maxQuantity = parseInt(input.max);
+            var enteredQuantity = parseInt(input.value);
+
+            if (isNaN(enteredQuantity) || enteredQuantity < 1) {
+                input.value = 1;
+            } else if (enteredQuantity > maxQuantity) {
+                input.value = maxQuantity;
+            }
+        }
+
         function decreaseQuantity(productId) {
             var inputElement = document.getElementById("qty-" + productId);
             var currentValue = parseInt(inputElement.value, 10);
@@ -119,12 +166,22 @@
             }
         }
 
-        function increaseQuantity(productId) {
+        function increaseQuantity(productId, availableQuantity) {
             var inputElement = document.getElementById("qty-" + productId);
             var currentValue = parseInt(inputElement.value, 10);
-            if (currentValue < 300) {
+
+            if (currentValue < availableQuantity) {
                 inputElement.value = currentValue + 1;
                 updateQuantity(productId, currentValue + 1);
+            } else {
+                // Display an error message or take appropriate action
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: 'Trong kho chỉ còn:' + availableQuantity,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             }
         }
         function updateQuantity(productId, newQuantity) {
@@ -167,6 +224,7 @@
                         $("#product-" + productId).remove();
                         $("#totalPrice").text(data.totalPrice + " VND");
                         $("#totalQuantity").text(data.totalQuantity);
+                        window.location.reload();
                     } else {
                         console.error("Lỗi khi xóa sản phẩm.");
                     }

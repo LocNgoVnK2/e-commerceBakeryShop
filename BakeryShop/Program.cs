@@ -76,8 +76,7 @@ builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddReCaptcha(options =>
 {
 
-    //khi mở file https://keep.google.com/
- 
+  
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>
