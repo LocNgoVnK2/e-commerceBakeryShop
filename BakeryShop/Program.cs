@@ -71,12 +71,12 @@ builder.Services.AddScoped<IRateService, RateService>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 //until
-
+builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
-
   
+
 });
 
 builder.Services.AddDbContext<EXDbContext>(options =>
@@ -95,6 +95,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 var emailConfiguration = builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
+
 builder.Services.AddSingleton(emailConfiguration);
 builder.Services.AddScoped<IEmailService, EmailService>();
 

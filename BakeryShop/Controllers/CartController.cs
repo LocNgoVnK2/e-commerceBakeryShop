@@ -482,12 +482,8 @@ namespace BakeryShop.Controllers
 
         }
 
-
-
         public async Task<IActionResult> CreatePaymentUrl(CheckOutViewModel checkOutView)
         {
-
-
 
             Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
 
@@ -495,12 +491,25 @@ namespace BakeryShop.Controllers
             model.Name = checkOutView.FirstName + " " + checkOutView.LastName;
             model.Amount = (double)order.TotalAmount;
             //model.Amount = 200000;
-            model.OrderDescription = "thanh toán cho hóa đơn: " + checkOutView.IdOrder + " với giá :";
+            model.OrderDescription = "thanh toán cho hóa đơn: '" + checkOutView.IdOrder + "' với giá :";
+            TempData["checkOutViewModel"] = JsonConvert.SerializeObject(checkOutView);
             var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+        
+            return Redirect(url);
+        }
+
+        public async Task<IActionResult> PaymentCallback()
+        {
+            var response = _vnPayService.PaymentExecute(Request.Query); 
+
+
+            
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
+                    var checkOutView = JsonConvert.DeserializeObject<CheckOutViewModel>(TempData["checkOutViewModel"] as string);
+
                     Customer customer = new Customer()
                     {
                         Address = checkOutView.Address,
@@ -518,6 +527,7 @@ namespace BakeryShop.Controllers
                     await _checkOutService.InsertCheckOut(checkOut);
 
                     //set status payment
+                    Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                     order.PaidStatus = true;
                     await _orderService.UpdateOrder(order);
 
@@ -529,14 +539,7 @@ namespace BakeryShop.Controllers
                     scope.Dispose();
                 }
             }
-
-            return Redirect(url);
-        }
-
-        public IActionResult PaymentCallback()
-        {
-            var response = _vnPayService.PaymentExecute(Request.Query);
-
+            
             return View(response);
         }
 
