@@ -62,7 +62,7 @@
 
     window.addEventListener('beforeunload', function (event) {
         if (!isOrderCancelled && !isFormSubmitted) {
-            event.preventDefault();
+            
             cancelOrder();
         }
     });
@@ -81,11 +81,6 @@
             },
             error: function (error) {
                 console.error("Lỗi khi gửi yêu cầu xóa sản phẩm: " + error);
-            },
-            complete: function () {
-                isOrderCancelled = true;
-                // Allow the browser to unload the page
-                window.location.href = "about:blank";
             }
         });
     }

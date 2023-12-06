@@ -17,7 +17,7 @@ namespace Infrastructure.Service
         Task DeleteOrderDetail(OrderDetail orderDetail);
         Task<IQueryable<OrderDetail>> GetOrderDetailsByOrderId(int orderId);
     }
-
+      
     public class OrderDetailService : IOrderDetailService
     {
         private IOrderDetailRepository orderDetailRepository;

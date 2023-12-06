@@ -112,89 +112,112 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CheckOutBill()
         {
-            var cartItemData = HttpContext.Session.GetString("cart");
-            List<CartItemVewModel> cartItemList = new List<CartItemVewModel>();
-            List<string> outOfStockProducts = new List<string>(); // Danh sách sản phẩm hết số lượng
-
-            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                try
+                var cartItemData = HttpContext.Session.GetString("cart");
+                List<CartItemVewModel> cartItemList = new List<CartItemVewModel>();
+                List<string> outOfStockProducts = new List<string>(); // Danh sách sản phẩm hết số lượng
+                if (!string.IsNullOrEmpty(cartItemData))
                 {
-                    Order order = new Order()
+                    using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        OrderDate = DateTime.Now,
-                        IsDone = false
-                    };
-
-                    CheckOutViewModel checkOut = new CheckOutViewModel();
-                    List<RollBackViewModel> list = new List<RollBackViewModel>();
-                    await _orderService.InsertOrder(order);
-                    Double totalPrice = 0;
-
-                    if (!string.IsNullOrEmpty(cartItemData))
-                    {
-                        cartItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemData);
-
-                        foreach (CartItemVewModel cartItemVew in cartItemList)
+                        try
                         {
-                            // Kiểm tra số lượng sản phẩm
-                            Product product = await _productsService.GetProduct(cartItemVew.ProductId);
-                            if (product.Quantity < cartItemVew.Quantity)
+                            Order order = new Order()
                             {
-                              
-                                outOfStockProducts.Add(product.ProductName+"Chỉ còn "+ product.Quantity + " Sản phẩm");
-                                continue; 
+                                OrderDate = DateTime.Now,
+                                IsDone = false
+                            };
+
+                            CheckOutViewModel checkOut = new CheckOutViewModel();
+                            List<RollBackViewModel> list = new List<RollBackViewModel>();
+                            await _orderService.InsertOrder(order);
+                            Double totalPrice = 0;
+
+                    
+                                cartItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemData);
+
+                                foreach (CartItemVewModel cartItemVew in cartItemList)
+                                {
+                                    // Kiểm tra số lượng sản phẩm
+                                    Product product = await _productsService.GetProduct(cartItemVew.ProductId);
+                                    if (product.Quantity < cartItemVew.Quantity)
+                                    {
+
+                                        outOfStockProducts.Add(product.ProductName + "Chỉ còn " + product.Quantity + " Sản phẩm");
+                                        continue;
+                                    }
+
+                                    // Cập nhật số lượng cho sản phẩm
+                                    product.Quantity -= cartItemVew.Quantity;
+
+                                    RollBackViewModel rollBack = new RollBackViewModel();
+                                    rollBack.Quantity = cartItemVew.Quantity;
+                                    rollBack.Id = cartItemVew.ProductId;
+                                    list.Add(rollBack);
+
+                                    await _productsService.UpdateProduct(product);
+
+                                    totalPrice += cartItemVew.TotalPrice;
+                                    OrderDetail orderDetail = new OrderDetail()
+                                    {
+                                        ProductID = cartItemVew.ProductId,
+                                        OrderID = order.OrderID,
+                                        Quantity = cartItemVew.Quantity,
+                                        Subtotal = cartItemVew.TotalPrice
+                                        // discount tính sau 
+                                    };
+                                    await _orderDetailService.InsertOrderDetail(orderDetail);
+                                }
+
+                                order.TotalAmount = totalPrice;
+                                await _orderService.UpdateOrder(order);
+                        
+
+                            scope.Complete();
+
+                            if (outOfStockProducts.Any())
+                            {
+                                // Thêm thông báo vào TempData nếu có sản phẩm hết số lượng
+                                TempData["OutOfStockProducts"] = string.Join(", ", outOfStockProducts);
+                                return RedirectToAction("Index");
                             }
 
-                            // Cập nhật số lượng cho sản phẩm
-                            product.Quantity -= cartItemVew.Quantity;
+                            checkOut.IdOrder = order.OrderID;
+                            checkOut.TotalPrice = order.TotalAmount;
+                            checkOut.RollBacks = list;
 
-                            RollBackViewModel rollBack = new RollBackViewModel();
-                            rollBack.Quantity = cartItemVew.Quantity;
-                            rollBack.Id = cartItemVew.ProductId;
-                            list.Add(rollBack);
+                            string serializedItemList = JsonConvert.SerializeObject(checkOut);
+                            HttpContext.Session.SetString("RollBackList", serializedItemList);
 
-                            await _productsService.UpdateProduct(product);
-
-                            totalPrice += cartItemVew.TotalPrice;
-                            OrderDetail orderDetail = new OrderDetail()
-                            {
-                                ProductID = cartItemVew.ProductId,
-                                OrderID = order.OrderID,
-                                Quantity = cartItemVew.Quantity,
-                                Subtotal = cartItemVew.TotalPrice
-                                // discount tính sau 
-                            };
-                            await _orderDetailService.InsertOrderDetail(orderDetail);
+                            return View(checkOut);
                         }
-
-                        order.TotalAmount = totalPrice;
-                        await _orderService.UpdateOrder(order);
-                    }
-
-                    scope.Complete();
-
-                    if (outOfStockProducts.Any())
-                    {
-                        // Thêm thông báo vào TempData nếu có sản phẩm hết số lượng
-                        TempData["OutOfStockProducts"] = string.Join(", ", outOfStockProducts);
-                        return RedirectToAction("Index");
-                    }
-
-                    checkOut.IdOrder = order.OrderID;
-                    checkOut.TotalPrice = order.TotalAmount;
-                    checkOut.RollBacks = list;
-
-                    string serializedItemList = JsonConvert.SerializeObject(checkOut);
-                    HttpContext.Session.SetString("RollBackList", serializedItemList);
-
-                    return View(checkOut);
+                        catch (Exception ex)
+                        {
+                            scope.Dispose();
+                            return NotFound();
+                        }
                 }
-                catch (Exception ex)
+            }
+            else
+            {
+                // use rollback
+                var oldItemData = HttpContext.Session.GetString("RollBackList");
+                CheckOutViewModel checkOut = JsonConvert.DeserializeObject<CheckOutViewModel>(oldItemData);
+                using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    scope.Dispose();
-                    return NotFound();
+                    try
+                    {
+                        await ProcessRollback(checkOut);
+
+                        scope.Complete();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        scope.Dispose();
+
+                    }
                 }
+                return NotFound();
             }
         }
         [HttpPost]
@@ -209,25 +232,7 @@ namespace BakeryShop.Controllers
                 {
                     try
                     {
-                        Order order = await _orderService.GetOrder((int)checkOut.IdOrder);
-                        IQueryable<OrderDetail> orderDetail = await _orderDetailService.GetOrderDetailsByOrderId((int)order.OrderID);
-                        IQueryable<Product> products = await _productsService.GetProducts();
-                        foreach(var item in checkOut.RollBacks)
-                        {
-                            var productToUpdate = products.FirstOrDefault(p => p.ProductID== item.Id);
-
-                            if (productToUpdate != null)
-                            {
-                                
-                                productToUpdate.Quantity += item.Quantity;
-                            }
-                            await _productsService.UpdateProduct(productToUpdate);
-                        }
-                        foreach (var item in orderDetail)
-                        {
-                            await _orderDetailService.DeleteOrderDetail(item);
-                        }
-                            await _orderService.DeleteOrder(order);
+                        await ProcessRollback(checkOut);
 
                         scope.Complete();
                         return Json("Pass");
@@ -235,17 +240,41 @@ namespace BakeryShop.Controllers
                     catch (Exception ex)
                     {
                         scope.Dispose();
-
                         return Json(new { success = false });
                     }
                 }
-
             }
             catch (Exception ex)
             {
-
                 return Json(new { success = false });
             }
+        }
+
+        private async Task ProcessRollback(CheckOutViewModel checkOut)
+        {
+  
+            Order order = await _orderService.GetOrder((int)checkOut.IdOrder);
+            IQueryable<OrderDetail> orderDetail = await _orderDetailService.GetOrderDetailsByOrderId((int)order.OrderID);
+            IQueryable<Product> products = await _productsService.GetProducts();
+
+            foreach (var item in checkOut.RollBacks)
+            {
+                var productToUpdate = products.FirstOrDefault(p => p.ProductID == item.Id);
+
+                if (productToUpdate != null)
+                {
+                    productToUpdate.Quantity += item.Quantity;
+                    await _productsService.UpdateProduct(productToUpdate);
+                }
+            }
+
+            foreach (var item in orderDetail)
+            {
+                await _orderDetailService.DeleteOrderDetail(item);
+            }
+
+            await _orderService.DeleteOrder(order);
+            
         }
 
 
@@ -484,7 +513,7 @@ namespace BakeryShop.Controllers
 
         public async Task<IActionResult> CreatePaymentUrl(CheckOutViewModel checkOutView)
         {
-
+            HttpContext.Session.Remove("cart");
             Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
 
             PaymentInformationModel model = new PaymentInformationModel();
@@ -500,47 +529,77 @@ namespace BakeryShop.Controllers
 
         public async Task<IActionResult> PaymentCallback()
         {
-            var response = _vnPayService.PaymentExecute(Request.Query); 
+            var response = _vnPayService.PaymentExecute(Request.Query);
 
 
-            
-            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            if (response.TransactionId != "0" && response.PaymentId != "0")
             {
-                try
-                {
-                    var checkOutView = JsonConvert.DeserializeObject<CheckOutViewModel>(TempData["checkOutViewModel"] as string);
 
-                    Customer customer = new Customer()
+
+                using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    try
                     {
-                        Address = checkOutView.Address,
-                        Email = checkOutView.Email,
-                        FirstName = checkOutView.FirstName,
-                        LastName = checkOutView.LastName,
-                        PhoneNumber = checkOutView.PhoneNumber,
-                    };
-                    await _customerService.InsertCustomer(customer);
-                    CheckOut checkOut = new CheckOut();
-                    checkOut.IdOrder = checkOutView.IdOrder;
-                    checkOut.CustomerId = customer.CustomerId;
-                    checkOut.IsReceived = false;
-                    checkOut.Note = checkOutView.Note;
-                    await _checkOutService.InsertCheckOut(checkOut);
+                        var checkOutView = JsonConvert.DeserializeObject<CheckOutViewModel>(TempData["checkOutViewModel"] as string);
 
-                    //set status payment
-                    Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
-                    order.PaidStatus = true;
-                    await _orderService.UpdateOrder(order);
+                        Customer customer = new Customer()
+                        {
+                            Address = checkOutView.Address,
+                            Email = checkOutView.Email,
+                            FirstName = checkOutView.FirstName,
+                            LastName = checkOutView.LastName,
+                            PhoneNumber = checkOutView.PhoneNumber,
+                        };
+                        await _customerService.InsertCustomer(customer);
+                        CheckOut checkOut = new CheckOut();
+                        checkOut.IdOrder = checkOutView.IdOrder;
+                        checkOut.CustomerId = customer.CustomerId;
+                        checkOut.IsReceived = false;
+                        checkOut.Note = checkOutView.Note;
+                        await _checkOutService.InsertCheckOut(checkOut);
 
-                    scope.Complete();
-                    HttpContext.Session.Remove("cart");
+                        //set status payment
+                        Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
+                        order.PaidStatus = true;
+                        await _orderService.UpdateOrder(order);
+
+                        scope.Complete();
+                        HttpContext.Session.Remove("cart");
+                        HttpContext.Session.Remove("RollBackList");
+                    }
+                    catch (Exception ex)
+                    {
+                        scope.Dispose();
+                    }
                 }
-                catch (Exception ex)
-                {
-                    scope.Dispose();
-                }
+
+                return View(response);
             }
-            
-            return View(response);
+            else
+            {
+                       // use rollback
+                    var oldItemData = HttpContext.Session.GetString("RollBackList");
+                    CheckOutViewModel checkOut = JsonConvert.DeserializeObject<CheckOutViewModel>(oldItemData);
+                    using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                    {
+                        try
+                        {
+                            await ProcessRollback(checkOut);
+
+                            scope.Complete();
+                          
+                        }
+                        catch (Exception ex)
+                        {
+                            scope.Dispose();
+                    
+                        }
+                    }
+              
+                    return RedirectToAction("Index", "Home");
+                
+               
+            }
         }
 
 
