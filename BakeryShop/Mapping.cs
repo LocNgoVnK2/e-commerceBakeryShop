@@ -26,6 +26,10 @@ namespace BakeryShop
 
             CreateMap<Employee, AccountManagementViewModel>();
             CreateMap<AccountManagementViewModel, Employee>();
+
+            CreateMap<Models.PaymentResponseModel, Infrastructure.Entities.PaymentResponseModel>();
+            CreateMap<Infrastructure.Entities.PaymentResponseModel, Models.PaymentResponseModel>();
+
         }
     }
 }

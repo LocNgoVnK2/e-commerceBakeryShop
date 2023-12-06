@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Entities;
 using AspNetCore.ReCaptcha;
-using BakeryShop.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,7 +75,7 @@ builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
-    
+ 
 
 });
 

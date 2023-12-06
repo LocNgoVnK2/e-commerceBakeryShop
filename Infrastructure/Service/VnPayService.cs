@@ -1,7 +1,14 @@
-﻿using BakeryShop.Libraries;
-using BakeryShop.Models;
+﻿using Infrastructure.Entities;
+using Infrastructure.Libraries;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace BakeryShop.Services
+namespace Infrastructure.Service
 {
     public class VnPayService : IVnPayService
     {
@@ -46,5 +53,4 @@ namespace BakeryShop.Services
             return response;
         }
     }
-
 }

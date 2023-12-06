@@ -1,5 +1,6 @@
-﻿using BakeryShop.Models;
-using BakeryShop.Services;
+﻿using AutoMapper;
+using BakeryShop.Models;
+
 using BakeryShop.Utils;
 using Infrastructure.Entities;
 using Infrastructure.Service;
@@ -24,6 +25,7 @@ namespace BakeryShop.Controllers
         private readonly Infrastructure.Service.IEmailService emailService;
         private readonly IVnPayService _vnPayService;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
         public CartController(IProductsService productsService,
                               IOrderDetailService orderDetailService,
@@ -32,7 +34,9 @@ namespace BakeryShop.Controllers
                               ICustomerService customerService,
                               Infrastructure.Service.IEmailService emailService,
                               IVnPayService vnPayService,
-                              IConfiguration configuration)
+                              IConfiguration configuration,
+                              IMapper mapper
+                              )
         {
             this._productsService = productsService;
             _orderDetailService = orderDetailService;
@@ -42,6 +46,7 @@ namespace BakeryShop.Controllers
             this.emailService = emailService;
             _vnPayService = vnPayService;
             _configuration = configuration;
+            _mapper = mapper;
         }
         public async Task<ActionResult> Index(int id, int quantity)
          {
@@ -516,7 +521,7 @@ namespace BakeryShop.Controllers
             HttpContext.Session.Remove("cart");
             Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
 
-            PaymentInformationModel model = new PaymentInformationModel();
+            Infrastructure.Entities.PaymentInformationModel model = new Infrastructure.Entities.PaymentInformationModel();
             model.Name = checkOutView.FirstName + " " + checkOutView.LastName;
             model.Amount = (double)order.TotalAmount;
             //model.Amount = 200000;
@@ -529,8 +534,9 @@ namespace BakeryShop.Controllers
 
         public async Task<IActionResult> PaymentCallback()
         {
-            var response = _vnPayService.PaymentExecute(Request.Query);
+            var responseModel = _vnPayService.PaymentExecute(Request.Query);
 
+            var response = _mapper.Map<Models.PaymentResponseModel>(responseModel); 
 
             if (response.TransactionId != "0" && response.PaymentId != "0")
             {

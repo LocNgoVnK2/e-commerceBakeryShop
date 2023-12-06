@@ -1,13 +1,18 @@
-﻿using BakeryShop.Models;
+﻿using Infrastructure.Entities;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
-namespace BakeryShop.Libraries
+namespace Infrastructure.Libraries
 {
-
     public class VnPayLibrary
     {
         private readonly SortedList<string, string> _requestData = new SortedList<string, string>(new VnPayCompare());
