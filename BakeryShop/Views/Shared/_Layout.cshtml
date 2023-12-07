@@ -107,8 +107,8 @@
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Shop" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
                         <a href="@Url.Action("Index", "Shop")">Sản phẩm</a>
                     </li>
-                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Cart" && ViewContext.RouteData.Values["Action"].ToString() == "ReviewOrder" ? "active" : "")">
-                        <a href="@Url.Action("ValidationReviewOrder", "Cart")">Đặt hàng riêng</a>
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "CustomProduct" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
+                        <a href="@Url.Action("Index", "CustomProduct")">Đặt hàng riêng</a>
                     </li>
                     <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Cart" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
                         <a href="@Url.Action("Index", "Cart")">Giỏ hàng</a>

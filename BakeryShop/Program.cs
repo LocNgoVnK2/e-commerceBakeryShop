@@ -70,12 +70,16 @@ builder.Services.AddScoped<IRateService, RateService>();
 // VN PAY 
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 
+//Store 
+builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IStoreService, StoreService>();
+
 //until
 builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
- 
+  
 
 });
 

@@ -25,6 +25,7 @@ namespace BakeryShop.Controllers
         private readonly Infrastructure.Service.IEmailService emailService;
         private readonly IVnPayService _vnPayService;
         private readonly IConfiguration _configuration;
+        private readonly IStoreService _storeService;
         private readonly IMapper _mapper;
 
         public CartController(IProductsService productsService,
@@ -35,6 +36,7 @@ namespace BakeryShop.Controllers
                               Infrastructure.Service.IEmailService emailService,
                               IVnPayService vnPayService,
                               IConfiguration configuration,
+                              IStoreService storeService,
                               IMapper mapper
                               )
         {
@@ -44,6 +46,7 @@ namespace BakeryShop.Controllers
             _customerService = customerService;
             _checkOutService = checkOutService;
             this.emailService = emailService;
+            _storeService = storeService;
             _vnPayService = vnPayService;
             _configuration = configuration;
             _mapper = mapper;
@@ -285,8 +288,7 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-            string km = await DistanceCalculate("Bình Trung 2, Bình Thạnh Đông, Phú Tân, An Giang, Vietnam", checkOutView.Address);
-            double nkm = Utils.Utils.ExtractDistance(km);
+            int store = await FindNearStoreFromOrder(checkOutView.Address);
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
 
@@ -312,6 +314,7 @@ namespace BakeryShop.Controllers
 
                     //set status payment
                     order.PaidStatus = false;
+                    order.IdStore = store;
                     await _orderService.UpdateOrder(order);
 
                     scope.Complete();
@@ -422,6 +425,11 @@ namespace BakeryShop.Controllers
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+
+
+
+
         [HttpPost]
         public IActionResult UpdateQuantity(int productId, int newQuantity)
         {
@@ -623,14 +631,12 @@ namespace BakeryShop.Controllers
                     HttpResponseMessage response = await client.GetAsync(request);
                     if (response.IsSuccessStatusCode)
                     {
-                       
-
                         string responseData = await response.Content.ReadAsStringAsync();
                         JToken jsonToken = JToken.Parse(responseData);
 
                         // Lấy giá trị số kilomet từ JSON
                         string distanceText = jsonToken["rows"][0]["elements"][0]["distance"]["text"].ToString();
-
+                        // trả về định dạnh "xx km"
 
                         return distanceText;
                     }
@@ -646,5 +652,27 @@ namespace BakeryShop.Controllers
             }
 
         }
+        public async Task<int> FindNearStoreFromOrder(string address)
+        {
+            var listStore = await _storeService.GetStores();
+            int nearStoreId = -1;
+            double minDistance = double.MaxValue;
+
+            foreach (var store in listStore)
+            {
+                string km = await DistanceCalculate(store.Address, address);
+                double distance = Utils.Utils.ExtractDistance(km);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearStoreId = store.IdStore; // Giả sử cửa hàng có một thuộc tính Id để lấy.
+                }
+            }
+
+            return nearStoreId;
+        }
+
+
     }
 }
