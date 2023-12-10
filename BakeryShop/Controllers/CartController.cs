@@ -548,14 +548,14 @@ namespace BakeryShop.Controllers
 
             if (response.TransactionId != "0" && response.PaymentId != "0")
             {
-
+                
 
                 using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
                     try
                     {
                         var checkOutView = JsonConvert.DeserializeObject<CheckOutViewModel>(TempData["checkOutViewModel"] as string);
-
+                        int store = await FindNearStoreFromOrder(checkOutView.Address);
                         Customer customer = new Customer()
                         {
                             Address = checkOutView.Address,
@@ -575,6 +575,7 @@ namespace BakeryShop.Controllers
                         //set status payment
                         Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                         order.PaidStatus = true;
+                        order.IdStore = store;
                         await _orderService.UpdateOrder(order);
 
                         scope.Complete();

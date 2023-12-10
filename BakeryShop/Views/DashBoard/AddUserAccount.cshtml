@@ -73,11 +73,11 @@
             <form class="w3-container" asp-action="AddAccount" asp-controller="AccountManagement" enctype="multipart/form-data" method="post">
                 <input class="w3-input w3-border w3-round-large" asp-for="AccountID" type="hidden" name="AccountID" required>
                 <div class="form-group">
-                    <label for="Username">Username</label>
+                    <label for="Username">Tên tài khoản</label>
                     <input type="text" class="form-control" id="Username" asp-for="Username" name="Username" required>
                 </div>
                 <div class="form-group">
-                    <label for="Password">Password</label>
+                    <label for="Password">Mật khẩu</label>
                     <input type="password" class="form-control" id="Password" asp-for="Password" name="Password" required>
                 </div>
                 <div class="form-group">
@@ -86,25 +86,38 @@
                 </div>
   
                 <div class="form-group">
-                    <label for="FirstName">First Name</label>
+                    <label for="FirstName">Tên</label>
                     <input type="text" class="form-control" id="FirstName" asp-for="FirstName" name="FirstName">
                 </div>
                 <div class="form-group">
-                    <label for="LastName">Last Name</label>
+                    <label for="LastName">Họ</label>
                     <input type="text" class="form-control" id="LastName" asp-for="LastName" name="LastName">
                 </div>
                 <div class="form-group">
-                    <label for="Position">Position</label>
+                    <label for="Position">Địa chỉ</label>
                     <input type="text" class="form-control" id="Position" asp-for="Position" name="Position">
                 </div>
                 <div class="form-group">
-                    <label for="PhoneNumber">Phone Number</label>
+                    <label for="PhoneNumber">Số điện thoại</label>
                     <input type="text" class="form-control" id="PhoneNumber" asp-for="PhoneNumber" name="PhoneNumber">
                 </div>
+
+                <div class="form-group">
+                    <label for="SelectedStoreId">Chọn cửa hàng</label>
+                    <select class="form-control" id="SelectedStoreId" asp-for="IdStore" name="IdStore" required>
+                        <option value="">-- Chọn cửa hàng --</option>
+                        @foreach (var store in Model.Stores) 
+                        {
+                            <option value="@store.IdStore">@store.StoreName</option>
+                        }
+                    </select>
+                </div>
+
                 <div class="form-group" style="text-align: center;">
                     <button type="submit" class="btn btn-primary">Add Account</button>
                     <a type="button" class="btn btn-secondary" href="@Url.Action("AccountManagement", "DashBoard")">Cancel</a>
                 </div>
+
             </form>
         </div>
 

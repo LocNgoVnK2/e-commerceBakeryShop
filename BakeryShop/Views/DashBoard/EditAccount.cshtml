@@ -102,6 +102,16 @@
                     <label for="PhoneNumber">Phone Number</label>
                     <input type="text" class="form-control" id="PhoneNumber" asp-for="PhoneNumber" name="PhoneNumber">
                 </div>
+                <div class="form-group">
+                    <label for="SelectedStoreId">Chọn cửa hàng</label>
+                    <select class="form-control" id="SelectedStoreId" asp-for="IdStore" name="IdStore" required>
+                        <option value="">-- Chọn cửa hàng --</option>
+                        @foreach (var store in Model.Stores)
+                        {
+                            <option value="@store.IdStore">@store.StoreName</option>
+                        }
+                    </select>
+                </div>
                 <div class="form-group" style="text-align: center;">
                     <button type="submit" class="btn btn-primary">Edit Account</button>
                     <a type="button" class="btn btn-secondary" href="@Url.Action("AccountManagement", "DashBoard")">Cancel</a>

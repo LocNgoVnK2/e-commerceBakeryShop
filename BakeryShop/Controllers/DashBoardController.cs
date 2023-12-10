@@ -34,7 +34,7 @@ namespace BakeryShop.Controllers
         private readonly ICheckOutService _checkOutService;
         private readonly IOrderDetailService _orderDetailService;
         private readonly IRateService _rateService;
-
+        private readonly IStoreService _storeService;
 
         public DashBoardController(IMapper mapper,
                                     ICategoryService categoryService,
@@ -45,7 +45,9 @@ namespace BakeryShop.Controllers
                                     IOrderService orderService,
                                     ICustomerService customerService,
                                     IOrderDetailService orderDetailService,
-                                    IRateService rateService
+                                    IRateService rateService,
+                                    IStoreService storeService
+
                                     )
         {
             _mapper = mapper;
@@ -58,6 +60,7 @@ namespace BakeryShop.Controllers
             _checkOutService = checkOutService;
             _orderDetailService = orderDetailService;
             _rateService = rateService;
+            _storeService = storeService;
         }
 
         public async Task<IActionResult> Index()
@@ -65,8 +68,21 @@ namespace BakeryShop.Controllers
 
             List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
 
+            string userJson = HttpContext.Session.GetString("LoggedInUser");
+            AccountsViewModel loggedInUser = JsonConvert.DeserializeObject<AccountsViewModel>(userJson);
+
+
             var orders = await _orderService.GetOrders();
-            orders = orders.Where(e => e.IsDone == false).Select(e => e);
+            if(loggedInUser.Role == "1")
+            {
+                orders = orders.Where(e => e.IsDone == false).Select(e => e);
+            }
+            else
+            {
+                orders = orders.Where(e => e.IsDone == false && e.IdStore == loggedInUser.IdStore).Select(e => e);
+            }
+   
+
 
             foreach (Order order in orders)
             {
@@ -245,9 +261,13 @@ namespace BakeryShop.Controllers
         }
         public async Task<IActionResult> AddUserAccount()
         {
+            IQueryable<Store> stores = await _storeService.GetStores();
+            IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
 
+            AccountManagementViewModel accountManagementViewModel = new AccountManagementViewModel();
+            accountManagementViewModel.Stores = storesModel;
 
-            return View("AddUserAccount");
+            return View("AddUserAccount", accountManagementViewModel);
         }
         public async Task<IActionResult> EditProduct(int id)
         {
@@ -341,6 +361,9 @@ namespace BakeryShop.Controllers
         {
             Accounts account = await _accountsService.GetAccount(id);
             Employee employee = await _employeeService.GetEmployee((int)account.EmployeeID);
+            IEnumerable<Store> stores = await _storeService.GetStores();
+            IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
+
             AccountManagementViewModel model = new AccountManagementViewModel();
             if (employee != null)
             {
@@ -352,6 +375,8 @@ namespace BakeryShop.Controllers
                 model.FirstName = employee.FirstName;
                 model.LastName = employee.LastName;
                 model.Position = employee.Position;
+                model.IdStore = account.IdStore;
+                model.Stores = storesModel;
 
             }
             return View("EditAccount", model);
@@ -384,6 +409,7 @@ namespace BakeryShop.Controllers
                     ProductID = product.ProductID,
                     Price = product.Price,
                     OrderDetailID = orderDetail.OrderID
+                    
                 };
                 orderDetailViewModels.Add(orderDetailViewModel);
             }
@@ -406,6 +432,7 @@ namespace BakeryShop.Controllers
                 checkOutView.IsReceived = checkOut.IsReceived;
                 checkOutView.Note = checkOut.Note;
                 checkOutView.orderDetails = orderDetailViewModels;
+                checkOutView.PaymentStatus = order.PaidStatus;
             }
 
             return checkOutView;
@@ -576,15 +603,39 @@ namespace BakeryShop.Controllers
                         <td>{orderDetail.Subtotal}</td>
                     </tr>";
                     }
+                        if (checkOutView.PaymentStatus == true)
+                        {
+                            htmlBill += $@"
+                    <tr>
+                        <td>Thu hộ:</td>
+                        <td></td>
+                        <td></td>
+                        <td> Đơn hàng đã được thanh toán </td>
+                    </tr>";
+                        }
+                        else
+                        {
+                            htmlBill += $@"
+                    <tr>
+                        <td>Thu hộ:</td>
+                        <td></td>
+                        <td></td>
+                        <td>{checkOutView.TotalPrice}</td>
+                    </tr>";
+                        }
 
-                    htmlBill += @"
-                    </tbody>
+
+            htmlBill += @"
+
+
+                  </tbody>
                 </table>
                 <footer>
                     <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
                 </footer>
             </body>
             </html>";
+
 
             return htmlBill;
         }

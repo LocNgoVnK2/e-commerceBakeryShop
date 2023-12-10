@@ -30,6 +30,9 @@ namespace BakeryShop
             CreateMap<Models.PaymentResponseModel, Infrastructure.Entities.PaymentResponseModel>();
             CreateMap<Infrastructure.Entities.PaymentResponseModel, Models.PaymentResponseModel>();
 
+            CreateMap<Store, StoreViewModel>();
+            CreateMap<StoreViewModel, Store>();
+
         }
     }
 }

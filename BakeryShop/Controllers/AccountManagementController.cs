@@ -28,13 +28,7 @@ namespace BakeryShop.Controllers
         [HttpPost]
         public async Task<ActionResult> AddAccount(AccountManagementViewModel model)
         {
-            /*
-              if (model.Password != model.ConfirmPassword)
-                {
-                    TempData["ErrorMessage"] = "Mật khẩu nhập lại không khớp.";
-                    return RedirectToAction("ForgotPassword", model);
-                }
-             */
+          
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 IQueryable<Accounts> accounts = await _accountsService.GetAccounts();
@@ -69,7 +63,8 @@ namespace BakeryShop.Controllers
                         Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                         Role = "2",
                         EmployeeID = newEmployee.EmployeeID,
-                        IsActivate = true
+                        IsActivate = true,
+                        IdStore = model.IdStore
                     };
                     await _accountsService.InsertAccount(newAccount);
                     scope.Complete(); 
@@ -112,6 +107,7 @@ namespace BakeryShop.Controllers
 
                     accountExist.Email = model.Email;
                     accountExist.Username = model.Username;
+                    accountExist.IdStore = model.IdStore;
                     if (model.Password != null)
                     {
                         accountExist.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);

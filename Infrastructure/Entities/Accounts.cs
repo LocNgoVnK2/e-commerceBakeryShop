@@ -36,5 +36,6 @@ namespace Infrastructure.Entities
 
         public int? IdStore { get; set; }
 
+
     }
 }

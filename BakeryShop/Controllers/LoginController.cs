@@ -17,15 +17,21 @@ namespace BakeryShop.Controllers
 {
     public class LoginController : Controller
     {
-        IAccountsService accountsService;
-        IEmailService emailService;
-        IEmployeeService employeeService;
+        private readonly IAccountsService accountsService;
+        private readonly IEmailService emailService;
+        private readonly IEmployeeService employeeService;
+        private readonly IStoreService storeService;
         private readonly IMapper mapper;
-        public LoginController(IEmployeeService employeeService, IAccountsService accountsService, IEmailService emailService, IMapper mapper)
+        public LoginController(IEmployeeService employeeService,
+                               IAccountsService accountsService,
+                               IEmailService emailService,
+                               IStoreService storeService,
+                               IMapper mapper)
         {
             this.accountsService = accountsService;
             this.emailService = emailService;
             this.employeeService = employeeService;
+            this.storeService = storeService;
             this.mapper = mapper;
         }
         
@@ -61,9 +67,17 @@ namespace BakeryShop.Controllers
                 {
                     Accounts loginUser = await list.Where(a => a.Username == user.Username).FirstOrDefaultAsync();
                     Employee employee = await employeeService.GetEmployee((int)loginUser.EmployeeID);
-                    string employeeJson = JsonConvert.SerializeObject(employee);
-                    HttpContext.Session.SetString("Employee", employeeJson);
-                    string userJson = JsonConvert.SerializeObject(loginUser);
+                    Store store = await storeService.GetStore((int)loginUser.IdStore);
+
+                    AccountsViewModel accountViewModel = mapper.Map<AccountsViewModel>(loginUser);
+                    accountViewModel.PhoneNumber = employee.PhoneNumber;
+                    accountViewModel.FirstName = employee.FirstName;
+                    accountViewModel.LastName = employee.LastName;
+                    accountViewModel.Position = employee.Position;
+
+                    accountViewModel.StoreName = store.StoreName;
+
+                    string userJson = JsonConvert.SerializeObject(accountViewModel);
                     HttpContext.Session.SetString("LoggedInUser", userJson);
                     
                     return RedirectToAction("Index", "DashBoard");
