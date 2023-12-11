@@ -19,6 +19,7 @@ namespace BakeryShop.Controllers
         }
         public IActionResult Index()
         {
+
             return View();
         }
         public IActionResult AddUserAccount()

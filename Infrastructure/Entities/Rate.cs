@@ -12,9 +12,10 @@ namespace Infrastructure.Entities
     public class Rate
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int? RatingId { get; set; }
-        public int Star { get; set; }
-        public int ProductId { get; set; }
+        public int? Star { get; set; }
+        public int? ProductId { get; set; }
         public bool? StatusRate { get; set; }
     }
 }

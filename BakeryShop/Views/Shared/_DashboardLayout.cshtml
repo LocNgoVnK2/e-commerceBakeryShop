@@ -42,7 +42,7 @@
                 <i class="fas fa-user me-2"></i>Thọ Bakery
             </div>
            
-            <div class="list-group list-group-flush my-3">
+            <div class="list-group list-group-flush my-3" style=" max-height: 80vh;overflow-y: auto;">
                 <a asp-controller="DashBoard" asp-action="Index"
                    class="list-group-item list-group-item-action bg-transparent second-text 
                    @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "fw-bold")">
@@ -79,6 +79,11 @@
                 @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "AccountManagement" ? "active" : "fw-bold")">
                         <i class="fa fa-user-circle" ></i> Quản lý tài khoản
                     </a>
+                    <a asp-controller="DashBoard" asp-action="StoreManagement" class="list-group-item list-group-item-action bg-transparent second-text
+                @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "StoreManagement" ? "active" : "fw-bold")">
+                        <i class="fa fa-home"></i> Quản lý của hàng
+                    </a>
+      
                 }
                 <a asp-controller="Login" asp-action="LogOut" method="post" class="list-group-item list-group-item-action bg-transparent text-danger fw-bold">
                     <i class="fas fa-power-off me-2"></i>Logout

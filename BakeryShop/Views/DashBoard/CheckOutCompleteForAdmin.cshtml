@@ -2,18 +2,14 @@
 @using Newtonsoft.Json;
 @model List<CheckOutBillViewModel>
 @{
+    var seletedOrder = 0;
     string userJson = Context.Session.GetString("LoggedInUser");
-    Accounts loggedInUser = null;
-    Employee employee = null;
+    AccountsViewModel loggedInUser = null;
+    ;
     if (!string.IsNullOrEmpty(userJson))
     {
-        loggedInUser = JsonConvert.DeserializeObject<Accounts>(userJson);
-        if (loggedInUser.EmployeeID != null)
-        {
-            string employeeJson = Context.Session.GetString("Employee");
+        loggedInUser = JsonConvert.DeserializeObject<AccountsViewModel>(userJson);
 
-            employee = JsonConvert.DeserializeObject<Employee>(employeeJson);
-        }
     }
     else
     {
@@ -41,7 +37,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
         <div class="d-flex align-items-center">
             <i class="fas fa-align-left primary-text fs-4 me-3" id="menu-toggle"></i>
-            <h2 class="fs-2 m-0">Dashboard</h2>
+            <h2 class="fs-2 m-0">@loggedInUser.StoreName</h2>
 
         </div>
 

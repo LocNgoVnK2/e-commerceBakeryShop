@@ -14,7 +14,7 @@
         public string? PhoneNumber { get; set; }
         public bool? IsActivate { get; set;}
         public int? IdStore { get; set; }
-
+        public string? StoreName { get; set; }
         public IEnumerable<StoreViewModel>? Stores { get; set; }
     }
 }

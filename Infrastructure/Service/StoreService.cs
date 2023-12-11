@@ -41,6 +41,7 @@ namespace Infrastructure.Service
 
         public async Task InsertStore(Store store)
         {
+            store.IsUsed= true;
             await _StoresRepository.InsertAsync(store);
         }
 

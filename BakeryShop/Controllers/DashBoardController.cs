@@ -19,6 +19,7 @@ using iText.Html2pdf;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using System.Globalization;
+using Org.BouncyCastle.Utilities.Collections;
 
 namespace BakeryShop.Controllers
 {
@@ -63,154 +64,7 @@ namespace BakeryShop.Controllers
             _storeService = storeService;
         }
 
-        public async Task<IActionResult> Index()
-        {
-
-            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
-
-            string userJson = HttpContext.Session.GetString("LoggedInUser");
-            AccountsViewModel loggedInUser = JsonConvert.DeserializeObject<AccountsViewModel>(userJson);
-
-
-            var orders = await _orderService.GetOrders();
-            if(loggedInUser.Role == "1")
-            {
-                orders = orders.Where(e => e.IsDone == false).Select(e => e);
-            }
-            else
-            {
-                orders = orders.Where(e => e.IsDone == false && e.IdStore == loggedInUser.IdStore).Select(e => e);
-            }
-   
-
-
-            foreach (Order order in orders)
-            {
-
-
-                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
-                if (checkOut != null)
-                {
-                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
-                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
-                    {
-
-                        IdOrder = checkOut.IdOrder,
-                        IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
-                        OrderDate = order.OrderDate,
-                        PhoneNumber = customer.PhoneNumber,
-                        Address = customer.Address,
-                        FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus
-                    };
-                    checkOutViewModels.Add(checkOutView);
-
-                }
-
-            }
-            return View(checkOutViewModels);
-
-        }
-        //CheckOutCompleteBill
-        public async Task<IActionResult> CheckOutCompleteBill(string inforOrder) // load ở view chop nhan vien hoan thanh dpon hang
-
-        {
-
-            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
-
-            var orders = await _orderService.GetOrders();
-            orders = orders.Where(e => e.IsDone == true).Select(e => e);
-
-            foreach (Order order in orders)
-            {
-                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
-
-                if (checkOut != null && checkOut.IsReceived==false)
-                {
-                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
-                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
-                    {
-
-                        IdOrder = checkOut.IdOrder,
-                        IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
-                        OrderDate = order.OrderDate,
-                        PhoneNumber = customer.PhoneNumber,
-                        Address = customer.Address,
-                        FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus,
-                        DeliveryStatus = order.DeliveryId == null ? false : true
-
-                    };
-                    checkOutViewModels.Add(checkOutView);
-
-                }
-
-            }
-
-            if (!string.IsNullOrEmpty(inforOrder))
-            {
-                checkOutViewModels = checkOutViewModels.Where(checkOut =>
-                    checkOut.IdOrder.ToString().Contains(inforOrder) ||
-                    checkOut.TotalPrice.ToString().Contains(inforOrder) ||
-                    checkOut.OrderDate.ToString().Contains(inforOrder) ||
-                    checkOut.PhoneNumber.Contains(inforOrder) ||
-                    checkOut.Address.Contains(inforOrder) ||
-                    checkOut.FirstName.Contains(inforOrder)
-                ).ToList();
-            }
-            return View(checkOutViewModels);
-
-        }
-        public async Task<IActionResult> CheckOutCompleteForAdmin(string searchString )// lay hoa don cho tk admin
-        {
-            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
-
-            var orders = await _orderService.GetOrders();
-            if (!string.IsNullOrEmpty(searchString))
-            {
-               
-                orders = orders
-                    .Where(order =>
-                        order.OrderID.ToString().Contains(searchString) ||
-                        order.OrderDate.ToString().Contains(searchString) 
- 
-
-                    );
-            }
-            else
-            {
-                orders = orders.Where(e => e.IsDone == true).Select(e => e);
-            }
-          
-            foreach (Order order in orders)
-            {
-                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
-
-                if (checkOut != null && checkOut.IsReceived == true)
-                {
-                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
-                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
-                    {
-
-                        IdOrder = checkOut.IdOrder,
-                        IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
-                        OrderDate = order.OrderDate,
-                        PhoneNumber = customer.PhoneNumber,
-                        Address = customer.Address,
-                        FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus
-                    };
-                    checkOutViewModels.Add(checkOutView);
-
-                }
-
-            }
-            return View(checkOutViewModels);
-
-        }
+        // productTag
         public async Task<IActionResult> Product(int? page, string searchString)
         {
             try
@@ -259,16 +113,7 @@ namespace BakeryShop.Controllers
 
             return View("AddProduct", model);
         }
-        public async Task<IActionResult> AddUserAccount()
-        {
-            IQueryable<Store> stores = await _storeService.GetStores();
-            IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
 
-            AccountManagementViewModel accountManagementViewModel = new AccountManagementViewModel();
-            accountManagementViewModel.Stores = storesModel;
-
-            return View("AddUserAccount", accountManagementViewModel);
-        }
         public async Task<IActionResult> EditProduct(int id)
         {
             Product product = await _productsService.GetProduct(id);
@@ -280,6 +125,10 @@ namespace BakeryShop.Controllers
 
             return View("EditProduct", productView);
         }
+
+
+        // categoryTag
+
         public async Task<IActionResult> EditCategory(int id)
         {
             Category category = await _categoryService.GetCategory(id);
@@ -305,12 +154,29 @@ namespace BakeryShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        // accountTag
+        public async Task<IActionResult> AddUserAccount()
+        {
+            IQueryable<Store> stores = await _storeService.GetStores();
+            IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
+
+            AccountManagementViewModel accountManagementViewModel = new AccountManagementViewModel();
+            accountManagementViewModel.Stores = storesModel;
+
+            return View("AddUserAccount", accountManagementViewModel);
+        }
+
         public async Task<IActionResult> AccountManagement(int? page, string searchString)
         {
             try
             {
                 int pageSize = 5;
                 int pageNumber = (page ?? 1);
+
+                IEnumerable<Store> stores = await _storeService.GetStores();
+                IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
 
                 IQueryable<Accounts> listAccounts = await _accountsService.GetAccounts();
                 IQueryable<Employee> listEmployees = await _employeeService.GetEmployees();
@@ -344,7 +210,9 @@ namespace BakeryShop.Controllers
                         LastName = v.Employee.LastName,
                         Position = v.Employee.Position,
                         PhoneNumber = v.Employee.PhoneNumber,
-                        IsActivate = v.Account.IsActivate
+                        IsActivate = v.Account.IsActivate,
+                        IdStore = v.Account.IdStore,
+                        StoreName = storesModel.FirstOrDefault(e => e.IdStore == v.Account.IdStore)?.StoreName
                     };
                     viewModels.Add(viewModel);
                 }
@@ -381,6 +249,158 @@ namespace BakeryShop.Controllers
             }
             return View("EditAccount", model);
         }
+
+
+        // orderTag
+        public async Task<IActionResult> Index()
+        {
+
+            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
+
+            string userJson = HttpContext.Session.GetString("LoggedInUser");
+            AccountsViewModel loggedInUser = JsonConvert.DeserializeObject<AccountsViewModel>(userJson);
+
+
+            var orders = await _orderService.GetOrders();
+            if (loggedInUser.Role == "1")
+            {
+                orders = orders.Where(e => e.IsDone == false).Select(e => e);
+            }
+            else
+            {
+                orders = orders.Where(e => e.IsDone == false && e.IdStore == loggedInUser.IdStore).Select(e => e);
+            }
+
+
+
+            foreach (Order order in orders)
+            {
+
+
+                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
+                if (checkOut != null)
+                {
+                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
+                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
+                    {
+
+                        IdOrder = checkOut.IdOrder,
+                        IsReceived = checkOut.IsReceived,
+                        TotalPrice = order.TotalAmount,
+                        OrderDate = order.OrderDate,
+                        PhoneNumber = customer.PhoneNumber,
+                        Address = customer.Address,
+                        FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus
+                    };
+                    checkOutViewModels.Add(checkOutView);
+
+                }
+
+            }
+            return View(checkOutViewModels);
+
+        }
+        //CheckOutCompleteBill
+        public async Task<IActionResult> CheckOutCompleteBill(string inforOrder) // load ở view chop nhan vien hoan thanh dpon hang
+
+        {
+
+            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
+
+            var orders = await _orderService.GetOrders();
+            orders = orders.Where(e => e.IsDone == true).Select(e => e);
+
+            foreach (Order order in orders)
+            {
+                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
+
+                if (checkOut != null && checkOut.IsReceived == false)
+                {
+                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
+                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
+                    {
+
+                        IdOrder = checkOut.IdOrder,
+                        IsReceived = checkOut.IsReceived,
+                        TotalPrice = order.TotalAmount,
+                        OrderDate = order.OrderDate,
+                        PhoneNumber = customer.PhoneNumber,
+                        Address = customer.Address,
+                        FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus,
+                        DeliveryStatus = order.DeliveryId == null ? false : true
+
+                    };
+                    checkOutViewModels.Add(checkOutView);
+
+                }
+
+            }
+
+            if (!string.IsNullOrEmpty(inforOrder))
+            {
+                checkOutViewModels = checkOutViewModels.Where(checkOut =>
+                    checkOut.IdOrder.ToString().Contains(inforOrder) ||
+                    checkOut.TotalPrice.ToString().Contains(inforOrder) ||
+                    checkOut.OrderDate.ToString().Contains(inforOrder) ||
+                    checkOut.PhoneNumber.Contains(inforOrder) ||
+                    checkOut.Address.Contains(inforOrder) ||
+                    checkOut.FirstName.Contains(inforOrder)
+                ).ToList();
+            }
+            return View(checkOutViewModels);
+
+        }
+        public async Task<IActionResult> CheckOutCompleteForAdmin(string searchString)// lay hoa don cho tk admin
+        {
+            List<CheckOutBillViewModel> checkOutViewModels = new List<CheckOutBillViewModel>();
+
+            var orders = await _orderService.GetOrders();
+            if (!string.IsNullOrEmpty(searchString))
+            {
+
+                orders = orders
+                    .Where(order =>
+                        order.OrderID.ToString().Contains(searchString) ||
+                        order.OrderDate.ToString().Contains(searchString)
+
+
+                    );
+            }
+            else
+            {
+                orders = orders.Where(e => e.IsDone == true).Select(e => e);
+            }
+
+            foreach (Order order in orders)
+            {
+                CheckOut checkOut = await _checkOutService.GetCheckOut((int)order.OrderID);
+
+                if (checkOut != null && checkOut.IsReceived == true)
+                {
+                    Customer customer = await _customerService.GetCustomer((int)checkOut.CustomerId);
+                    CheckOutBillViewModel checkOutView = new CheckOutBillViewModel()
+                    {
+
+                        IdOrder = checkOut.IdOrder,
+                        IsReceived = checkOut.IsReceived,
+                        TotalPrice = order.TotalAmount,
+                        OrderDate = order.OrderDate,
+                        PhoneNumber = customer.PhoneNumber,
+                        Address = customer.Address,
+                        FirstName = customer.FirstName + " " + customer.LastName,
+                        PaymentStatus = (bool)order.PaidStatus
+                    };
+                    checkOutViewModels.Add(checkOutView);
+
+                }
+
+            }
+            return View(checkOutViewModels);
+
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetOrderDetail(int orderId)
         {
@@ -707,10 +727,51 @@ namespace BakeryShop.Controllers
                     return NotFound();
                 }
             }
-
-
-
         }
+
+        // storeTag
+
+        public async Task<IActionResult> StoreManagement(int? page, string searchString)
+        {
+            try
+            {
+                int pageSize = 5;
+                int pageNumber = (page ?? 1);
+
+                IEnumerable<Store> stores = await _storeService.GetStores();
+                IEnumerable<StoreViewModel> storesModel = _mapper.Map<IEnumerable<StoreViewModel>>(stores);
+
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    storesModel = storesModel.Where(e => e.StoreName.Contains(searchString) && e.IsUsed==true).Select(e => e);
+                }
+                else
+                {
+                    storesModel = storesModel.Where(e => e.IsUsed==true).Select(e => e);
+                }
+
+                IPagedList<StoreViewModel> pagedStoresManagementModels = await storesModel.ToPagedListAsync(pageNumber, pageSize);
+                return View("StoreManagement", pagedStoresManagementModels);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        public async Task<IActionResult> AddStore()
+        {
+            return View("AddStore");
+        }
+
+
+        public async Task<IActionResult> EditStore(int id)
+        {
+            Store store = await _storeService.GetStore(id);
+            StoreViewModel storeView = _mapper.Map<StoreViewModel>(store);
+
+            return View("EditStore", storeView);
+        }
+
     }
 
 }

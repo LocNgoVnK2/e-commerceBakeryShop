@@ -94,9 +94,9 @@
                     <th>Email</th>
                     <th>Mã nhân viên</th>
                     <th>Tên</th>
-                    <th>Họ</th>
                     <th>Địa chỉ</th>
                     <th>Số điện thoại</th>
+                    <th>Cơ sở làm việc</th>
                     <th></th>
                 </tr>
             </thead>
@@ -111,11 +111,14 @@
                             <td>@acc.Username</td>
                             <td>@acc.Email</td>
                             <td>@acc.EmployeeID</td>
-                            <td>@acc.LastName</td>
-                            <td>@acc.FirstName</td>
+                            <td>@acc.FirstName @acc.LastName</td>
                             <td>@acc.Position</td>
                             <td>@acc.PhoneNumber</td>
 
+                            <td>
+
+                                @acc.StoreName
+                            </td>
                             <td>
 
                                 <a class="w3-button w3-green" asp-action="EditAccount" asp-controller="DashBoard" asp-route-id="@acc.AccountID">Sửa</a>

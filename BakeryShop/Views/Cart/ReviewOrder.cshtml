@@ -61,7 +61,7 @@
                                                 else if (order.IsAccept == true && order.IsReceived == true)
                                                 {
                                                     <p style="color: limegreen;">Đơn hàng đã được hoàn thành</p>
-                                                <a class="btn-primary" style="padding:15px;" asp-action="Index" asp-controller="RatingProduct" asp-route-phoneNumber="@order.PhoneNumber" asp-route-IdOrder="@order.IdOrder">Đánh giá</a>
+                                                <a class="btn-primary" style="padding:15px;" asp-action="Index" asp-controller="RatingProduct" asp-route-orderId="@order.IdOrder">Đánh giá</a>
                                                 }
                                                 else
                                                 {
