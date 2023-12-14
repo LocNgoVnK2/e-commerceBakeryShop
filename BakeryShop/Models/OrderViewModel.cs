@@ -13,5 +13,6 @@ namespace BakeryShop.Models
         public List<OrderDetail>? orderDetails { get; set; }
         public bool? PaidStatus { get; set; }
         public int? DeliveryId { get; set; }
+        public float? ShippingFee { get; set; }
     }
 }

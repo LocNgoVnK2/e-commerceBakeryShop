@@ -29,11 +29,13 @@ namespace BakeryShop.Controllers
         public async Task<IActionResult> Index(int orderId)
         {
             IQueryable<OrderDetail> orderDetails = await _orderDetailService.GetOrderDetailsByOrderId( orderId );
+            var orderDetailsNotReviewed = orderDetails.Where(od => od.Reviewed == false);
+
             IQueryable<Product> ProductList = await _productsService.GetProducts();
 
             List<ReviewProductViewModel> reviews = new List<ReviewProductViewModel>();
 
-            foreach ( OrderDetail orderDetail in orderDetails )
+            foreach ( OrderDetail orderDetail in orderDetailsNotReviewed)
             {
                 ReviewProductViewModel review = new ReviewProductViewModel()
                 {
@@ -43,8 +45,9 @@ namespace BakeryShop.Controllers
                 };
                 reviews.Add(review);
 
+
             }
-            // for theo ma sp r load vào 
+     
             return View(reviews);
         }
         
@@ -57,13 +60,22 @@ namespace BakeryShop.Controllers
          [HttpPost]
          public async Task<IActionResult> ProcessReview([FromBody] ReviewProductViewModel model)
          {
-             if (Utils.Utils.ContainsObsceneWords(model.DisplayName) && Utils.Utils.ContainsObsceneWords(model.ReviewContent)){
+             IQueryable<OrderDetail> orderDetails=null;
+             if (Utils.Utils.ContainsObsceneWords(model.DisplayName) || Utils.Utils.ContainsObsceneWords(model.ReviewContent)){
                 return BadRequest("Review của bạn có chứ từ chửi tục nên nó đã bị xóa.");
              }
+         
+
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
+                    orderDetails = await _orderDetailService.GetOrderDetailsByOrderId((int)model.OrderId);
+                    var orderDetail = orderDetails.FirstOrDefault(e => e.ProductID == (int)model.ProductID);
+                    orderDetail.Reviewed = true;
+                    await _orderDetailService.UpdateOrderDetail(orderDetail);
+
+
                     Rate rate = new Rate()
                     {
                         StatusRate = true,
@@ -81,6 +93,7 @@ namespace BakeryShop.Controllers
                     };
                     await _reviewService.InsertReview(review);
                     scope.Complete();
+
                     return Ok("Review submitted successfully");
 
                 }

@@ -286,12 +286,13 @@ namespace BakeryShop.Controllers
 
                         IdOrder = checkOut.IdOrder,
                         IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
+                        TotalPrice = order.TotalAmount + order.ShippingFee,
                         OrderDate = order.OrderDate,
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus
+                        PaymentStatus = (bool)order.PaidStatus,
+                        ShippingFee = order.ShippingFee,
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -323,14 +324,15 @@ namespace BakeryShop.Controllers
 
                         IdOrder = checkOut.IdOrder,
                         IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
+                        TotalPrice = order.TotalAmount + order.ShippingFee,
                         OrderDate = order.OrderDate,
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
                         PaymentStatus = (bool)order.PaidStatus,
-                        DeliveryStatus = order.DeliveryId == null ? false : true
-
+                        DeliveryStatus = order.DeliveryId == null ? false : true,
+                        ShippingFee = order.ShippingFee,
+                        
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -385,12 +387,13 @@ namespace BakeryShop.Controllers
 
                         IdOrder = checkOut.IdOrder,
                         IsReceived = checkOut.IsReceived,
-                        TotalPrice = order.TotalAmount,
+                        TotalPrice = order.TotalAmount + order.ShippingFee,
                         OrderDate = order.OrderDate,
                         PhoneNumber = customer.PhoneNumber,
                         Address = customer.Address,
                         FirstName = customer.FirstName + " " + customer.LastName,
-                        PaymentStatus = (bool)order.PaidStatus
+                        PaymentStatus = (bool)order.PaidStatus,
+                        ShippingFee = order.ShippingFee,
                     };
                     checkOutViewModels.Add(checkOutView);
 
@@ -453,6 +456,7 @@ namespace BakeryShop.Controllers
                 checkOutView.Note = checkOut.Note;
                 checkOutView.orderDetails = orderDetailViewModels;
                 checkOutView.PaymentStatus = order.PaidStatus;
+                checkOutView.ShippingFee = order.ShippingFee;
             }
 
             return checkOutView;
@@ -504,6 +508,7 @@ namespace BakeryShop.Controllers
                 checkOutView.orderDetails = orderDetailViewModels;
                 checkOutView.AccountID = order.AccountId;
                 checkOutView.employeeName = employee.FirstName + " " + employee.LastName;
+                checkOutView.ShippingFee = order.ShippingFee;
 
             }
             return Json(checkOutView);
@@ -623,7 +628,14 @@ namespace BakeryShop.Controllers
                         <td>{orderDetail.Subtotal}</td>
                     </tr>";
                     }
-                        if (checkOutView.PaymentStatus == true)
+                    htmlBill += $@"
+                            <tr>
+                                <td>Giá giao hàng:</td>
+                                <td></td>
+                                <td></td>
+                                <td> {checkOutView.ShippingFee}</td>
+                            </tr>";
+            if (checkOutView.PaymentStatus == true)
                         {
                             htmlBill += $@"
                     <tr>
@@ -640,7 +652,7 @@ namespace BakeryShop.Controllers
                         <td>Thu hộ:</td>
                         <td></td>
                         <td></td>
-                        <td>{checkOutView.TotalPrice}</td>
+                        <td>{checkOutView.TotalPrice + checkOutView.ShippingFee}</td>
                     </tr>";
                         }
 

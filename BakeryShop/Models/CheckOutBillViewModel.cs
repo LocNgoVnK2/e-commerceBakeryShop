@@ -13,6 +13,7 @@ namespace BakeryShop.Models
 
         public DateTime? OrderDate { get; set; }
         public Double? TotalPrice { get; set; }
+        public Double? ShippingFee { get; set; }
         public Double? DiscountPrice { get; set; }
         public string? FirstName { get; set; }
 

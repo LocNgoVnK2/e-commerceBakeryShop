@@ -19,5 +19,7 @@ namespace Infrastructure.Entities
         public Double? Subtotal { get; set; }
         public Double? DiscountMoney { get; set; }
 
+        public bool? Reviewed { get; set; }
+
     }
 }

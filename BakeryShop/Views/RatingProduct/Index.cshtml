@@ -98,11 +98,16 @@
         var displayName = $("#DisplayName_" + productId).val();
         var review = $("#Review_" + productId).val();
 
+        var urlParams = new URLSearchParams(window.location.search);
+        var orderId = urlParams.get('orderId');
+
         var data = {
             ProductID: productId,
             StarNumber: starNumber,
             DisplayName: displayName,
-            ReviewContent: review
+            ReviewContent: review,
+            // Thêm orderId vào dữ liệu
+            OrderId: orderId
         };
         $.ajax({
             type: "POST",

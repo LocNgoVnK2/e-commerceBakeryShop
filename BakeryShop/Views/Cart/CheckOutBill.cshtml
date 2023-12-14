@@ -10,6 +10,8 @@
                         <h2>Mã hóa đơn: @Model.IdOrder</h2>
                     </div>
                     <form asp-controller="Cart" method="post">
+                        <input type="hidden" id="ShippingFee" name="ShippingFee" value="">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="FirstName">Họ và tên lót</label>
@@ -24,9 +26,10 @@
                             <label for="Email">Email</label>
                             <input type="email" class="form-control" id="Email" name="Email">
                         </div>
+
                         <div class="col-12 mb-3">
                             <label for="Address">Địa chỉ</label>
-                            <input type="text" class="form-control mb-3" id="Address" name="Address">
+                            <input type="text" class="form-control mb-3" id="Address" name="Address" onblur="calculateShippingFee()">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="PhoneNumber">Số điện thoại</label>
@@ -43,20 +46,25 @@
                     </form>
                 </div>
             </div>
+     
             <div class="col-12 col-lg-4">
                 <div class="cart-summary">
                     <h5>Cart Total</h5>
                     <ul class="summary-table">
                         <li><span>Tổng cộng:</span> <span>@Model.TotalPrice</span></li>
                         <li><span>Gía giảm:</span> <span>Free</span></li>
-                        <li><span>Thành tiền:</span> <span>@Model.TotalPrice</span></li>
+                        <li><span>Gía giao hàng tiền:</span> <span id="ShippingFeeDisplay">0</span></li>
+                        <li><span>Thành tiền:</span> <span id="TotalPrice">@Model.TotalPrice</span></li>
                     </ul>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
+
     var isOrderCancelled = false;
     var isFormSubmitted = false;
 
@@ -67,10 +75,54 @@
         }
     });
 
-    // Thêm sự kiện cho nút submit
     document.querySelector('form').addEventListener('submit', function () {
         isFormSubmitted = true;
     });
+
+    function calculateShippingFee() {
+        var address = document.getElementById('Address').value;
+        Swal.fire({
+            title: 'Đang tính tiền giao hàng...',
+            allowOutsideClick: false,
+            showConfirmButton: false, 
+            onBeforeOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("CalculateShippingFee", "Cart")",
+            data: { Address: address },
+   
+            success: function (result) {
+    
+                var shippingFee = result.shippingFee;
+
+                document.getElementById('ShippingFee').value = shippingFee;
+
+                document.getElementById('ShippingFeeDisplay').innerText = shippingFee;
+                var finalPrice = @Model.TotalPrice + shippingFee;
+                document.getElementById('TotalPrice').innerText = finalPrice;
+                //TotalPrice
+                Swal.close();
+                Swal.fire({
+                    title: 'Tính giá giao hàng thành công!',
+                    icon: 'success',
+                    timer: 1500, // Đóng tự động sau 1.5 giây
+                    showConfirmButton: false
+                });
+            },
+            error: function (error) {
+                Swal.close();
+
+                Swal.fire({
+                    title: 'Lỗi khi tính giá giao hàng',
+                    icon: 'error',
+                    showConfirmButton: true
+                });
+            }
+        });
+    }
 
     function cancelOrder() {
         $.ajax({

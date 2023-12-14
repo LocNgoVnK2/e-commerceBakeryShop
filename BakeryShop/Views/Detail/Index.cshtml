@@ -67,7 +67,7 @@
                                         }
                               
                                     </div>
-                                  
+                                <p class="product-price">Số lượt đánh giá: @Model.NumberRate</p>
                                 </div>
                                 <!-- Avaiable -->
                         
@@ -111,28 +111,24 @@
 
                         </div>
                     </div>
-            <div class="panel panel-primary" style="width:100%; height: 400px; overflow-y: scroll;">
-                <div class="panel-heading">
+                <div class="panel-heading" style="border-bottom:solid black 1px">
                     <span class="glyphicon glyphicon-comment"></span>
                     Bình luận về sản phẩm
                 </div>
+            <div class="panel panel-primary" style="width:100%; height: 400px; overflow-y: scroll;">
+               
                 <div class="panel-body">
-                    <b>Ahmed</b>
-                    <p>hello there , this is example </p>
-                    <hr>
-
-                    <b>Mike</b>
-                    <p>hello there , this is example </p>
-                    <hr>
-
-                    <b>John</b>
-                    <p>hello there , this is example </p>
-                    <hr>
-
-                    <b>Mike</b>
-                    <p>hello there , this is example </p>
-                    <hr>
-
+                        @if (Model.Reviews!=null)
+                            @foreach(var review in Model.Reviews)
+                            {
+                                <b>@review.DisplayName</b>
+                                <p>@review.ReviewContent</p>
+                                <hr>
+                            }
+                        else{
+                              <p>Hiện tại chưa có đánh giá về sản phẩm</p>
+                        }
+                  
                 </div>
             </div>
                 </div>

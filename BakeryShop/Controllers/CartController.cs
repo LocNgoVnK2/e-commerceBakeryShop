@@ -315,6 +315,7 @@ namespace BakeryShop.Controllers
                     //set status payment
                     order.PaidStatus = false;
                     order.IdStore = store;
+                    order.ShippingFee = checkOutView.ShippingFee;
                     await _orderService.UpdateOrder(order);
 
                     scope.Complete();
@@ -531,7 +532,7 @@ namespace BakeryShop.Controllers
 
             Infrastructure.Entities.PaymentInformationModel model = new Infrastructure.Entities.PaymentInformationModel();
             model.Name = checkOutView.FirstName + " " + checkOutView.LastName;
-            model.Amount = (double)order.TotalAmount;
+            model.Amount = (double)order.TotalAmount+ (double)checkOutView.ShippingFee;
             //model.Amount = 200000;
             model.OrderDescription = "thanh toán cho hóa đơn: '" + checkOutView.IdOrder + "' với giá :";
             TempData["checkOutViewModel"] = JsonConvert.SerializeObject(checkOutView);
@@ -576,6 +577,7 @@ namespace BakeryShop.Controllers
                         Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                         order.PaidStatus = true;
                         order.IdStore = store;
+                        order.ShippingFee = checkOutView.ShippingFee;
                         await _orderService.UpdateOrder(order);
 
                         scope.Complete();
@@ -672,6 +674,26 @@ namespace BakeryShop.Controllers
             }
 
             return nearStoreId;
+        }
+        [HttpPost]
+        public async Task<ActionResult> CalculateShippingFeeAsync(string Address)
+        {
+            var listStore = await _storeService.GetStores();
+            double minDistance = double.MaxValue;
+
+            foreach (var store in listStore)
+            {
+                string km = await DistanceCalculate(store.Address, Address);
+                double distance = Utils.Utils.ExtractDistance(km);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                }
+            }
+            // tính tiền theo tỷ giá hiện tại 
+            double shippingFee = minDistance * 1000;
+            return Json(new { shippingFee = shippingFee });
         }
 
 

@@ -11,6 +11,7 @@ namespace Infrastructure.Service
     public interface IReviewService
     {
         Task<IQueryable<Review>> GetReviews();
+        Task<Review> GetReviewsByRatingId(int ratingId);
         Task<Review> GetReview(int id);
         Task InsertReview(Review review);
         Task UpdateReview(Review review);
@@ -49,6 +50,12 @@ namespace Infrastructure.Service
         public async Task UpdateReview(Review review)
         {
             await _reviewRepository.UpdateAsync(review);
+        }
+
+        public async Task<Review> GetReviewsByRatingId(int ratingId)
+        {
+            var review = _reviewRepository.GetAll().SingleOrDefault(e => e.RatingId == ratingId);
+            return review;
         }
     }
 }
