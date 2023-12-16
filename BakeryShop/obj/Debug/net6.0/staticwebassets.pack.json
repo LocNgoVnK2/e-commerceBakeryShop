@@ -277,6 +277,10 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "D:\\.netSave\\BakeryShop\\BakeryShop\\wwwroot\\js\\ForDashBoard.js",
+      "PackagePath": "staticwebassets\\js\\ForDashBoard.js"
+    },
+    {
       "Id": "D:\\.netSave\\BakeryShop\\BakeryShop\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
     },

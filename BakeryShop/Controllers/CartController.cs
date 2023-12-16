@@ -288,7 +288,7 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-            int store = await FindNearStoreFromOrder(checkOutView.Address);
+            int store = await FindNearStoreFromOrder(checkOutView.Address + checkOutView.Province + checkOutView.District);
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
 
@@ -297,7 +297,7 @@ namespace BakeryShop.Controllers
                     Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                     Customer customer = new Customer()
                     {
-                        Address = checkOutView.Address,
+                        Address = checkOutView.Address+checkOutView.Province+checkOutView.District,
                         Email = checkOutView.Email,
                         FirstName = checkOutView.FirstName,
                         LastName = checkOutView.LastName,
@@ -559,7 +559,7 @@ namespace BakeryShop.Controllers
                         int store = await FindNearStoreFromOrder(checkOutView.Address);
                         Customer customer = new Customer()
                         {
-                            Address = checkOutView.Address,
+                            Address = checkOutView.Address + checkOutView.Province + checkOutView.District,
                             Email = checkOutView.Email,
                             FirstName = checkOutView.FirstName,
                             LastName = checkOutView.LastName,
@@ -675,25 +675,40 @@ namespace BakeryShop.Controllers
 
             return nearStoreId;
         }
+        // maybe đổi thành api
         [HttpPost]
-        public async Task<ActionResult> CalculateShippingFeeAsync(string Address)
+        public async Task<ActionResult> CalculateShippingFeeAsync(string Address,string Province, string District)// province district
         {
-            var listStore = await _storeService.GetStores();
-            double minDistance = double.MaxValue;
-
-            foreach (var store in listStore)
+            string apiUrl = "https://services.giaohangtietkiem.vn/services/shipment/fee";
+            int storeId= await FindNearStoreFromOrder(Address+Province+District);
+            var store = await _storeService.GetStore(storeId);
+            using (HttpClient client = new HttpClient())
             {
-                string km = await DistanceCalculate(store.Address, Address);
-                double distance = Utils.Utils.ExtractDistance(km);
+                string apiKey = _configuration["GiaoHangTietKiemKey"];
+                client.DefaultRequestHeaders.Add("Token", apiKey);
 
-                if (distance < minDistance)
+                string request = apiUrl + "?pick_province=" + store.Province + "&pick_district=" + store.District + "&province=" + Province + "&district=" + District + "&weight=1000&deliver_option=none";
+                HttpResponseMessage response = await client.GetAsync(request);
+                if (response.IsSuccessStatusCode)
                 {
-                    minDistance = distance;
+                    string responseData = await response.Content.ReadAsStringAsync();
+                    JObject jsonResponse = JObject.Parse(responseData);
+
+                    if (jsonResponse["fee"] != null)
+                    {
+                        decimal shippingFee = jsonResponse["fee"]["fee"].Value<decimal>();
+                        return Json(new { shippingFee = shippingFee });
+                    }
+                    else
+                    {
+                        return Json(new { error = "Invalid response format" });
+                    }
+                }
+                else
+                {
+                    return Json(new { error = "Failed to retrieve shipping fee" });
                 }
             }
-            // tính tiền theo tỷ giá hiện tại 
-            double shippingFee = minDistance * 1000;
-            return Json(new { shippingFee = shippingFee });
         }
 
 

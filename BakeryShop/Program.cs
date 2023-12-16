@@ -85,7 +85,7 @@ builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
-   
+  
 
 });
 

@@ -783,7 +783,15 @@ namespace BakeryShop.Controllers
 
             return View("EditStore", storeView);
         }
+        // Manage Business
+        public ActionResult BusinessManagement(int? page, string searchString)
+        {
 
+            return View();
+    
+
+        }
     }
+   
 
 }

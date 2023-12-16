@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "ObuyrP+YseX19Ur+mHwRDmViF5KVvK7Jn7a+G9FTtTs=",
+  "Hash": "Ahlel3eL8d+UIX8cAYkz8IjsDRrdlemcmH8Be4jsXYg=",
   "Source": "BakeryShop",
   "BasePath": "_content/BakeryShop",
   "Mode": "Default",
@@ -1205,6 +1205,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\ForMain\\scss\\style.scss"
+    },
+    {
+      "Identity": "D:\\.netSave\\BakeryShop\\BakeryShop\\wwwroot\\js\\ForDashBoard.js",
+      "SourceId": "BakeryShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\.netSave\\BakeryShop\\BakeryShop\\wwwroot\\",
+      "BasePath": "_content/BakeryShop",
+      "RelativePath": "js/ForDashBoard.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\ForDashBoard.js"
     },
     {
       "Identity": "D:\\.netSave\\BakeryShop\\BakeryShop\\wwwroot\\js\\site.js",

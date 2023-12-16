@@ -26,11 +26,19 @@
                             <label for="Email">Email</label>
                             <input type="email" class="form-control" id="Email" name="Email">
                         </div>
-
+                        <div class="col-12 mb-3">
+                            <label for="Address">Tỉnh</label>
+                            <input type="text" class="form-control mb-3" id="Province" name="Province" >
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="Address">Quận/Huyện</label>
+                            <input type="text" class="form-control mb-3" id="District" name="District" >
+                        </div>
                         <div class="col-12 mb-3">
                             <label for="Address">Địa chỉ</label>
                             <input type="text" class="form-control mb-3" id="Address" name="Address" onblur="calculateShippingFee()">
                         </div>
+                  
                         <div class="col-md-6 mb-3">
                             <label for="PhoneNumber">Số điện thoại</label>
                             <input type="number" class="form-control" id="PhoneNumber" name="PhoneNumber" min="0">
@@ -81,6 +89,20 @@
 
     function calculateShippingFee() {
         var address = document.getElementById('Address').value;
+        var province = document.getElementById('Province').value;
+        var district = document.getElementById('District').value;
+
+        // Kiểm tra xem có province và district không
+        if (!province || !district) {
+            Swal.fire({
+                title: 'Yêu cầu nhập đủ thông tin',
+                text: 'Vui lòng nhập địa chỉ, tỉnh thành và quận huyện.',
+                icon: 'warning',
+                showConfirmButton: true
+            });
+            return; // Dừng hàm nếu thiếu thông tin
+        }
+
         Swal.fire({
             title: 'Đang tính tiền giao hàng...',
             allowOutsideClick: false,
@@ -92,7 +114,10 @@
         $.ajax({
             type: "POST",
             url: "@Url.Action("CalculateShippingFee", "Cart")",
-            data: { Address: address },
+            data: { Address: address,
+                    Province: province,
+                    District: district
+                    },
    
             success: function (result) {
     

@@ -12,7 +12,12 @@
 .second-text {
     color: var(--second-text-color);
 }
-
+.business-text {
+    color: black;
+}
+    .business-text:hover {
+        color: #FFFF00; /* Yellow color on hover */
+    }
 .primary-bg {
     background-color: var(--main-bg-color);
 }
@@ -86,3 +91,7 @@
         margin-left: -15rem;
     }
 }
+.bg-light-blue {
+    background-color: #27574e; /* Light blue color */
+}
+/*for form*/

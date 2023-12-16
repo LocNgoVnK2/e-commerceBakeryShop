@@ -43,6 +43,9 @@
             </div>
            
             <div class="list-group list-group-flush my-3" style=" max-height: 80vh;overflow-y: auto;">
+                <a asp-controller="Login" asp-action="LogOut" method="post" class="list-group-item list-group-item-action bg-transparent text-danger fw-bold">
+                    <i class="fas fa-power-off me-2"></i>Logout
+                </a>
                 <a asp-controller="DashBoard" asp-action="Index"
                    class="list-group-item list-group-item-action bg-transparent second-text 
                    @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "fw-bold")">
@@ -70,7 +73,7 @@
                     <a asp-controller="DashBoard" asp-action="Product"
                        class="list-group-item list-group-item-action bg-transparent second-text
                 @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "Product" ? "active" : "fw-bold")">
-                        <i class="fa fa-truck" aria-hidden="true"></i> Sản phẩm
+                        <i class="fa fa-shopping-bag" aria-hidden="true"></i> Sản phẩm
                     </a>
                     <a asp-controller="DashBoard" asp-action="Promotion" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
                         <i class="fas fa-gift me-2"></i>Chương trình khuyến mãi
@@ -83,11 +86,13 @@
                 @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "StoreManagement" ? "active" : "fw-bold")">
                         <i class="fa fa-home"></i> Quản lý của hàng
                     </a>
+                    <a asp-controller="DashBoard" asp-action="BusinessManagement" class="list-group-item list-group-item-action bg-transparent second-text
+                @(ViewContext.RouteData.Values["Controller"].ToString() == "DashBoard" && ViewContext.RouteData.Values["Action"].ToString() == "BusinessManagement" ? "active" : "fw-bold")">
+                        <i class="fa fa-truck" aria-hidden="true"></i> Quản lý kinh doanh
+                    </a>
       
                 }
-                <a asp-controller="Login" asp-action="LogOut" method="post" class="list-group-item list-group-item-action bg-transparent text-danger fw-bold">
-                    <i class="fas fa-power-off me-2"></i>Logout
-                </a>
+             
             </div>
         </div>
         <!-- <script src="~/formain/js/jquery/jquery-2.2.4.min.js"></script>-->
