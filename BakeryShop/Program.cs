@@ -78,6 +78,10 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 
+//Slide
+builder.Services.AddScoped<ISlideRepository, SlideRepository>();
+builder.Services.AddScoped<ISlideService, SlideService>();
+
 
 
 //until
@@ -85,7 +89,7 @@ builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
-  
+    
 
 });
 

@@ -51,6 +51,7 @@ namespace BakeryShop.Controllers
             _configuration = configuration;
             _mapper = mapper;
         }
+        //affect khuyển mãi ở đây
         public async Task<ActionResult> Index(int id, int quantity)
          {
             if (id != 0)
@@ -59,7 +60,7 @@ namespace BakeryShop.Controllers
                 if (oldItemData != null)
                 { // thêm vào card đã có item
 
-                    List<CartItemVewModel> oldItemList = new List<CartItemVewModel>();
+                    List<CartItemVewModel> oldItemList = new List<CartItemVewModel>();// thêm giảm giá đây 
 
                     oldItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(oldItemData);
 
@@ -88,7 +89,7 @@ namespace BakeryShop.Controllers
                 else
                 { // thêm mới cart còn trẳng
                     Product product = await _productsService.GetProduct(id);
-                    List<CartItemVewModel> cartItemVewModels = new List<CartItemVewModel>();
+                    List<CartItemVewModel> cartItemVewModels = new List<CartItemVewModel>();// thêm giảm giá đây 
                     CartItemVewModel cartItemVewModel = new CartItemVewModel()
                     {
                         Price = (Double)product.Price,
@@ -139,8 +140,6 @@ namespace BakeryShop.Controllers
                             List<RollBackViewModel> list = new List<RollBackViewModel>();
                             await _orderService.InsertOrder(order);
                             Double totalPrice = 0;
-
-                    
                                 cartItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemData);
 
                                 foreach (CartItemVewModel cartItemVew in cartItemList)
@@ -432,7 +431,7 @@ namespace BakeryShop.Controllers
 
 
         [HttpPost]
-        public IActionResult UpdateQuantity(int productId, int newQuantity)
+        public IActionResult UpdateQuantity(int productId, int newQuantity) // khỏi update giảm giá ở đây vì nó sài session
         {
             var cartItemData = HttpContext.Session.GetString("cart");
             if (!string.IsNullOrEmpty(cartItemData))

@@ -36,5 +36,6 @@ namespace Infrastructure.EF
         public DbSet<Store> stores { get; set; }
 
         public DbSet<Review> reviews { get; set; }
+        public DbSet<Slide> slides { get; set; }
     }
 }

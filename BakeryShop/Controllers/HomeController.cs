@@ -16,47 +16,58 @@ namespace BakeryShop.Controllers
         private readonly IMapper _mapper;
         private readonly ICategoryService _categoryService;
         private readonly IProductsService _productsService;
-        public HomeController(ILogger<HomeController> logger, IMapper mapper, ICategoryService categoryService, IProductsService productsService)
+        private readonly ISlideService _slideService;
+        public HomeController(ILogger<HomeController> logger, IMapper mapper, ICategoryService categoryService, IProductsService productsService, ISlideService slideService)
         {
             _logger = logger;
             _mapper = mapper;
             _categoryService = categoryService;
             _productsService = productsService;
+            _slideService = slideService;
         }
-   
-        public async Task<IActionResult> Index(int? page, string searchString)
-        {
-            try
+        
+            public async Task<IActionResult> Index(int? page, string searchString)
             {
-                int pageSize = 6;
-                int pageNumber = (page ?? 1);
+                try
+                {
+                    int pageSize = 6;
+                    int pageNumber = (page ?? 1);
+
+
+
+                    IQueryable<Slide> listSlides = await _slideService.GetSlides();
+                    List<SlideViewModel> slides = _mapper.Map<List<SlideViewModel>>(listSlides.OrderBy(s => s.Precedence).ToList());
+
+                    ViewBag.Slides = slides;
+
 
 
                 IQueryable<Product> listProduct = await _productsService.GetProducts();
-                if (!String.IsNullOrEmpty(searchString))
-                {
-                    listProduct = listProduct.Where(e => e.IsUsed == true && e.ProductName.Contains(searchString)).Select(e => e);
+                    if (!String.IsNullOrEmpty(searchString))
+                    {
+                        listProduct = listProduct.Where(e => e.IsUsed == true && e.ProductName.Contains(searchString)).Select(e => e);
+                    }
+                    else
+                    {
+                        listProduct = listProduct.Where(e => e.IsUsed == true).Select(e => e);
+                    }
+                    List<ProductViewModel> products = _mapper.Map<List<ProductViewModel>>(listProduct.ToList());
+                    IQueryable<Category> categories = await _categoryService.GetCategories();
+                    foreach (ProductViewModel product in products)
+                    {
+                        product.Category = categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+                    }
+                    IPagedList<ProductViewModel> pagedProducts = await products.ToPagedListAsync(pageNumber, pageSize);
+
+                    return View("Index", pagedProducts);
                 }
-                else
+                catch (Exception ex)
                 {
-                    listProduct = listProduct.Where(e => e.IsUsed == true).Select(e => e);
+                    return BadRequest(ex.Message);
                 }
-                List<ProductViewModel> products = _mapper.Map<List<ProductViewModel>>(listProduct.ToList());
-                IQueryable<Category> categories = await _categoryService.GetCategories();
-                foreach (ProductViewModel product in products)
-                {
-                    product.Category = categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
-                }
-                IPagedList<ProductViewModel> pagedProducts = await products.ToPagedListAsync(pageNumber, pageSize);
-                
-                return View("Index", pagedProducts);
+
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-           
-        }
+        
 
         public IActionResult Privacy()
         {

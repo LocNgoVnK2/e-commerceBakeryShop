@@ -29,7 +29,7 @@ namespace BakeryShop.Controllers
         public async Task<IActionResult> Index(int orderId)
         {
             IQueryable<OrderDetail> orderDetails = await _orderDetailService.GetOrderDetailsByOrderId( orderId );
-            var orderDetailsNotReviewed = orderDetails.Where(od => od.Reviewed == false);
+            var orderDetailsNotReviewed = orderDetails.Where(od => od.Reviewed == false || od.Reviewed == null);
 
             IQueryable<Product> ProductList = await _productsService.GetProducts();
 

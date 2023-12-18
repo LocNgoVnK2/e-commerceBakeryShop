@@ -36,6 +36,7 @@ namespace BakeryShop.Controllers
         private readonly IOrderDetailService _orderDetailService;
         private readonly IRateService _rateService;
         private readonly IStoreService _storeService;
+        private readonly ISlideService _slideService;
 
         public DashBoardController(IMapper mapper,
                                     ICategoryService categoryService,
@@ -47,8 +48,8 @@ namespace BakeryShop.Controllers
                                     ICustomerService customerService,
                                     IOrderDetailService orderDetailService,
                                     IRateService rateService,
-                                    IStoreService storeService
-
+                                    IStoreService storeService,
+                                    ISlideService slideService
                                     )
         {
             _mapper = mapper;
@@ -62,6 +63,7 @@ namespace BakeryShop.Controllers
             _orderDetailService = orderDetailService;
             _rateService = rateService;
             _storeService = storeService;
+            _slideService = slideService;
         }
 
         // productTag
@@ -783,14 +785,38 @@ namespace BakeryShop.Controllers
 
             return View("EditStore", storeView);
         }
-        // Manage Business
-        public ActionResult BusinessManagement(int? page, string searchString)
+        // Manage Slide
+        public async Task<ActionResult> SlideManagement()
         {
+            try
+            {
 
-            return View();
-    
 
+                IQueryable<Slide> slides = await _slideService.GetSlides();
+                List<SlideViewModel> storesModel = _mapper.Map<List<SlideViewModel>>(slides).AsQueryable().ToList();
+
+                return View("SlideManagement", storesModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
+        public async Task<IActionResult> AddSlide()
+        {
+            return View("AddSlide");
+        }
+
+
+        public async Task<IActionResult> EditSlide(int id)
+        {
+            Slide slide = await _slideService.GetSlide(id);
+            SlideViewModel slideView = _mapper.Map<SlideViewModel>(slide);
+
+            return View("EditSlide", slideView);
+        }
+
     }
    
 

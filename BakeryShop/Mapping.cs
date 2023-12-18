@@ -33,6 +33,9 @@ namespace BakeryShop
             CreateMap<Store, StoreViewModel>();
             CreateMap<StoreViewModel, Store>();
 
+            CreateMap<Slide, SlideViewModel>();
+            CreateMap<SlideViewModel, Slide>();
+
         }
     }
 }

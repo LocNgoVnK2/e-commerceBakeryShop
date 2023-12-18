@@ -48,16 +48,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEFkZFByb2R1Y3QuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/AddSlide.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEFkZFNsaWRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/AddStore.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEFkZFN0b3JlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/AddUserAccount.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEFkZFVzZXJBY2NvdW50LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/BusinessManagement.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEJ1c2luZXNzTWFuYWdlbWVudC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/Category.cshtml]
@@ -84,6 +84,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEVkaXRQcm9kdWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/EditSlide.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEVkaXRTbGlkZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/EditStore.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXEVkaXRTdG9yZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -98,6 +102,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/Promotion.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXFByb21vdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/SlideManagement.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaEJvYXJkXFNsaWRlTWFuYWdlbWVudC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/.netSave/BakeryShop/BakeryShop/Views/DashBoard/StoreManagement.cshtml]
