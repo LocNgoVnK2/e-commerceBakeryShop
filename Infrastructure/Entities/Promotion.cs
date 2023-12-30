@@ -8,13 +8,16 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Entities
 {
-    [Table("Promotions")]
+    [Table("Promotion")]
     public class Promotion
     {
         [Key]
         public int? PromotionID { get; set; }
         public string? PromotionName { get; set; }
         public string? Description { get; set; }
-        public string? Discount { get; set; }
+        public int? DiscountPercentage { get; set; }
+        public Double? Condition { get; set; }
+        public DateTime? StartDate { get; set;}
+        public DateTime? EndDate { get; set; }
     }
 }

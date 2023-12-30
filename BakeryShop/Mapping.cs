@@ -36,6 +36,8 @@ namespace BakeryShop
             CreateMap<Slide, SlideViewModel>();
             CreateMap<SlideViewModel, Slide>();
 
+            CreateMap<PromotionViewModel, Promotion>();
+            CreateMap<Promotion, PromotionViewModel>();
         }
     }
 }

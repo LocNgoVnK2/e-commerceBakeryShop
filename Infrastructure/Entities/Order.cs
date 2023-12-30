@@ -21,6 +21,7 @@ namespace Infrastructure.Entities
         public bool? PaidStatus { get; set; }
         public int? IdStore { get; set; }
         //DeliveryId
+        public Double? DiscountMoney { get; set; }
         public int? DeliveryId { get; set; }
     }
 }

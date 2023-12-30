@@ -37,6 +37,7 @@ namespace BakeryShop.Controllers
         private readonly IRateService _rateService;
         private readonly IStoreService _storeService;
         private readonly ISlideService _slideService;
+        private readonly IPromotionService _promotionService;
 
         public DashBoardController(IMapper mapper,
                                     ICategoryService categoryService,
@@ -49,7 +50,8 @@ namespace BakeryShop.Controllers
                                     IOrderDetailService orderDetailService,
                                     IRateService rateService,
                                     IStoreService storeService,
-                                    ISlideService slideService
+                                    ISlideService slideService,
+                                    IPromotionService promotionService
                                     )
         {
             _mapper = mapper;
@@ -64,6 +66,7 @@ namespace BakeryShop.Controllers
             _rateService = rateService;
             _storeService = storeService;
             _slideService = slideService;
+            _promotionService = promotionService;
         }
 
         // productTag
@@ -426,7 +429,7 @@ namespace BakeryShop.Controllers
                 var product = await _productsService.GetProduct((int)orderDetail.ProductID);
                 OrderDetailViewModel orderDetailViewModel = new OrderDetailViewModel()
                 {
-                    DiscountMoney = orderDetail.DiscountMoney,
+                 
                     OrderID = orderDetail.OrderID,
                     ProductName = product.ProductName,
                     Quantity = orderDetail.Quantity,
@@ -478,7 +481,7 @@ namespace BakeryShop.Controllers
                 var product = await _productsService.GetProduct((int)orderDetail.ProductID);
                 OrderDetailViewModel orderDetailViewModel = new OrderDetailViewModel()
                 {
-                    DiscountMoney = orderDetail.DiscountMoney,
+               
                     OrderID = orderDetail.OrderID,
                     ProductName = product.ProductName,
                     Quantity = orderDetail.Quantity,
@@ -688,6 +691,7 @@ namespace BakeryShop.Controllers
                 CheckOutBillViewModel checkOutBillViewModel = await QueryOrderDetail(orderId);
                 try
                 {
+                    /*
                     foreach (OrderDetailViewModel orderDetail in checkOutBillViewModel.orderDetails)
                     {
                         Rate rate = new Rate()
@@ -698,7 +702,7 @@ namespace BakeryShop.Controllers
                         };
                        await _rateService.InsertRate(rate);
                     }
-
+                    */
                     await _checkOutService.UpdateCheckOut(checkOut);
                     scope.Complete();
                     return RedirectToAction("CheckOutCompleteBill");
@@ -727,6 +731,9 @@ namespace BakeryShop.Controllers
                     await _checkOutService.DeleteCheckOut(checkOut);
                     foreach (OrderDetail detail in orderDetails)
                     {
+                        Product product = await _productsService.GetProduct((int)detail.ProductID);
+                        product.Quantity += detail.Quantity;
+                        await _productsService.UpdateProduct(product);
                         await _orderDetailService.DeleteOrderDetail(detail);
                     }
                     await _orderService.DeleteOrder(order);
@@ -790,8 +797,6 @@ namespace BakeryShop.Controllers
         {
             try
             {
-
-
                 IQueryable<Slide> slides = await _slideService.GetSlides();
                 List<SlideViewModel> storesModel = _mapper.Map<List<SlideViewModel>>(slides).AsQueryable().ToList();
 
@@ -817,7 +822,33 @@ namespace BakeryShop.Controllers
             return View("EditSlide", slideView);
         }
 
+        // Manage Promotion
+        public async Task<ActionResult> PromotionManagement()
+        {
+            try
+            {
+                IQueryable<Promotion> promotions = await _promotionService.GetPromotions();
+                List<PromotionViewModel> promotionsModel = _mapper.Map<List<PromotionViewModel>>(promotions).AsQueryable().ToList();
+
+                return View("PromotionManagement", promotionsModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        public async Task<IActionResult> AddPromotion()
+        {
+            return View("AddPromotion");
+        }
+        public async Task<IActionResult> EditPromotion(int id)
+        {
+            Promotion promotion = await _promotionService.GetPromotion(id);
+            PromotionViewModel promotionModel = _mapper.Map<PromotionViewModel>(promotion);
+
+            return View("EditPromotion", promotionModel);
+        }
     }
-   
+
 
 }

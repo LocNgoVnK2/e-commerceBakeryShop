@@ -82,14 +82,16 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISlideRepository, SlideRepository>();
 builder.Services.AddScoped<ISlideService, SlideService>();
 
-
+// PromotionMapping
+builder.Services.AddScoped<IPromotionMappingRepository, PromotionMappingRepository>();
+builder.Services.AddScoped<IPromotionMappingService, PromotionMappingService>();
 
 //until
 builder.Services.AddMvc().AddSessionStateTempDataProvider();
 
 builder.Services.AddReCaptcha(options =>
 {
-    
+  
 
 });
 

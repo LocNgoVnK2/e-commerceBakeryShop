@@ -26,6 +26,8 @@ namespace BakeryShop.Controllers
         private readonly IVnPayService _vnPayService;
         private readonly IConfiguration _configuration;
         private readonly IStoreService _storeService;
+        private readonly IPromotionMappingService _promotionMappingService;
+        private readonly IPromotionService _promotionService;
         private readonly IMapper _mapper;
 
         public CartController(IProductsService productsService,
@@ -37,6 +39,8 @@ namespace BakeryShop.Controllers
                               IVnPayService vnPayService,
                               IConfiguration configuration,
                               IStoreService storeService,
+                              IPromotionMappingService promotionMappingService,
+                              IPromotionService promotionService,
                               IMapper mapper
                               )
         {
@@ -49,6 +53,8 @@ namespace BakeryShop.Controllers
             _storeService = storeService;
             _vnPayService = vnPayService;
             _configuration = configuration;
+            _promotionMappingService = promotionMappingService;
+            _promotionService = promotionService;
             _mapper = mapper;
         }
         //affect khuyển mãi ở đây
@@ -140,7 +146,7 @@ namespace BakeryShop.Controllers
                             List<RollBackViewModel> list = new List<RollBackViewModel>();
                             await _orderService.InsertOrder(order);
                             Double totalPrice = 0;
-                                cartItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemData);
+                            cartItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(cartItemData);
 
                                 foreach (CartItemVewModel cartItemVew in cartItemList)
                                 {
@@ -148,7 +154,6 @@ namespace BakeryShop.Controllers
                                     Product product = await _productsService.GetProduct(cartItemVew.ProductId);
                                     if (product.Quantity < cartItemVew.Quantity)
                                     {
-
                                         outOfStockProducts.Add(product.ProductName + "Chỉ còn " + product.Quantity + " Sản phẩm");
                                         continue;
                                     }
@@ -170,16 +175,30 @@ namespace BakeryShop.Controllers
                                         OrderID = order.OrderID,
                                         Quantity = cartItemVew.Quantity,
                                         Subtotal = cartItemVew.TotalPrice
-                                        // discount tính sau 
                                     };
                                     await _orderDetailService.InsertOrderDetail(orderDetail);
                                 }
 
                                 order.TotalAmount = totalPrice;
                                 await _orderService.UpdateOrder(order);
-                        
 
-                            scope.Complete();
+                        IQueryable<Promotion> promotions = await _promotionService.GetPromotions();
+
+                        foreach (var promotion in promotions)
+                        {
+                            if (promotion.Condition <= order.TotalAmount)
+                            {
+                                PromotionMapping mapping = new PromotionMapping()
+                                {
+                                    OrderID = order.OrderID,
+                                    PromotionID = promotion.PromotionID,
+                                    DiscountAmount =(order.TotalAmount * (promotion.DiscountPercentage / 100.0))
+                                };
+
+                                await _promotionMappingService.InsertPromotionMapping(mapping);
+                            }
+                        }
+                        scope.Complete();
 
                             if (outOfStockProducts.Any())
                             {
@@ -191,8 +210,10 @@ namespace BakeryShop.Controllers
                             checkOut.IdOrder = order.OrderID;
                             checkOut.TotalPrice = order.TotalAmount;
                             checkOut.RollBacks = list;
+                        // Thêm thông tin load promo mapping lên đây
+                        //HowToApplyPromotion
 
-                            string serializedItemList = JsonConvert.SerializeObject(checkOut);
+                        string serializedItemList = JsonConvert.SerializeObject(checkOut);
                             HttpContext.Session.SetString("RollBackList", serializedItemList);
 
                             return View(checkOut);
@@ -263,7 +284,7 @@ namespace BakeryShop.Controllers
             Order order = await _orderService.GetOrder((int)checkOut.IdOrder);
             IQueryable<OrderDetail> orderDetail = await _orderDetailService.GetOrderDetailsByOrderId((int)order.OrderID);
             IQueryable<Product> products = await _productsService.GetProducts();
-
+            IQueryable<PromotionMapping> promoMappings = await _promotionMappingService.GetPromotionMappingsByOrderID((int)order.OrderID);
             foreach (var item in checkOut.RollBacks)
             {
                 var productToUpdate = products.FirstOrDefault(p => p.ProductID == item.Id);
@@ -279,6 +300,10 @@ namespace BakeryShop.Controllers
             {
                 await _orderDetailService.DeleteOrderDetail(item);
             }
+            foreach(var item in promoMappings)
+            {
+                await _promotionMappingService.DeletePromotionMapping(item);
+            }
 
             await _orderService.DeleteOrder(order);
             
@@ -287,7 +312,10 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-            int store = await FindNearStoreFromOrder(checkOutView.Address + checkOutView.Province + checkOutView.District);
+            // int store = await FindNearStoreFromOrder(checkOutView.Province + checkOutView.District);
+            int? store = HttpContext.Session.GetInt32("StoreId");
+
+            if (store.HasValue) HttpContext.Session.Remove("StoreId");
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
 
@@ -296,7 +324,7 @@ namespace BakeryShop.Controllers
                     Order order = await _orderService.GetOrder((int)checkOutView.IdOrder);
                     Customer customer = new Customer()
                     {
-                        Address = checkOutView.Address+checkOutView.Province+checkOutView.District,
+                        Address = checkOutView.Address + ", "+ checkOutView.District + ", " + checkOutView.Province,//checkOutView.Address+checkOutView.Province+checkOutView.District,
                         Email = checkOutView.Email,
                         FirstName = checkOutView.FirstName,
                         LastName = checkOutView.LastName,
@@ -503,6 +531,9 @@ namespace BakeryShop.Controllers
                     await _checkOutService.DeleteCheckOut(checkOut);
                     foreach (OrderDetail detail in orderDetails)
                     {
+                        Product product = await _productsService.GetProduct((int)detail.ProductID);
+                        product.Quantity += detail.Quantity;
+                        await _productsService.UpdateProduct(product);
                         await _orderDetailService.DeleteOrderDetail(detail);
                     }
                     await _orderService.DeleteOrder(order);
@@ -555,10 +586,12 @@ namespace BakeryShop.Controllers
                     try
                     {
                         var checkOutView = JsonConvert.DeserializeObject<CheckOutViewModel>(TempData["checkOutViewModel"] as string);
-                        int store = await FindNearStoreFromOrder(checkOutView.Address);
+                        int? store = HttpContext.Session.GetInt32("StoreId");
+
+                        if (store.HasValue) HttpContext.Session.Remove("StoreId");
                         Customer customer = new Customer()
                         {
-                            Address = checkOutView.Address + checkOutView.Province + checkOutView.District,
+                            Address = checkOutView.Address + ", " + checkOutView.District + ", " + checkOutView.Province,
                             Email = checkOutView.Email,
                             FirstName = checkOutView.FirstName,
                             LastName = checkOutView.LastName,
@@ -679,7 +712,8 @@ namespace BakeryShop.Controllers
         public async Task<ActionResult> CalculateShippingFeeAsync(string Address,string Province, string District)// province district
         {
             string apiUrl = "https://services.giaohangtietkiem.vn/services/shipment/fee";
-            int storeId= await FindNearStoreFromOrder(Address+Province+District);
+            int storeId= await FindNearStoreFromOrder(Province+" "+District);
+            HttpContext.Session.SetInt32("StoreId", storeId);
             var store = await _storeService.GetStore(storeId);
             using (HttpClient client = new HttpClient())
             {
@@ -709,6 +743,9 @@ namespace BakeryShop.Controllers
                 }
             }
         }
+
+        //bug
+       
 
 
     }

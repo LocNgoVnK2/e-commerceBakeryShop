@@ -11,6 +11,6 @@
         public int? Quantity { get; set; }
         public Double? Price { get; set; }
         public Double? Subtotal { get; set; }
-        public Double? DiscountMoney { get; set; }
+
     }
 }

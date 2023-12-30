@@ -37,5 +37,7 @@ namespace Infrastructure.EF
 
         public DbSet<Review> reviews { get; set; }
         public DbSet<Slide> slides { get; set; }
+
+        public DbSet<PromotionMapping> promotionMappings { get; set; }
     }
 }

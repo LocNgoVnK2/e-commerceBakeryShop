@@ -17,7 +17,7 @@ namespace Infrastructure.Entities
         public int? OrderID { get; set; }
         public int? Quantity { get; set; }
         public Double? Subtotal { get; set; }
-        public Double? DiscountMoney { get; set; }
+       
 
         public bool? Reviewed { get; set; }
 
