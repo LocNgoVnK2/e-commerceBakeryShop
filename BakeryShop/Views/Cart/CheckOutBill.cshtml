@@ -1,5 +1,7 @@
 ﻿@model CheckOutViewModel
-
+@{
+    var promotionsJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model.promotions);
+}
 <div class="cart-table-area section-padding-100">
     <div class="container-fluid">
         <div class="row">
@@ -9,9 +11,11 @@
                         <h2>Checkout</h2>
                         <h2>Mã hóa đơn: @Model.IdOrder</h2>
                     </div>
+                    
                     <form asp-controller="Cart" method="post">
                         <input type="hidden" id="ShippingFee" name="ShippingFee" value="">
-
+                        <input type="hidden" id="DiscountPrice" name="DiscountPrice" value="">
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="FirstName">Họ và tên lót</label>
@@ -26,6 +30,7 @@
                             <label for="Email">Email</label>
                             <input type="email" class="form-control" id="Email" name="Email">
                         </div>
+
                         <div class="col-12 mb-3">
                             <label for="Address">Tỉnh</label>
                             <input type="text" class="form-control mb-3" id="Province" name="Province" >
@@ -43,10 +48,26 @@
                             <label for="PhoneNumber">Số điện thoại</label>
                             <input type="number" class="form-control" id="PhoneNumber" name="PhoneNumber" min="0">
                         </div>
+            
+          
+              
+
+
                         <div class="col-12 mb-3">
                             <label for="Note">Ghi chú</label>
                             <textarea name="Note" class="form-control w-100" id="Note" name="Note" cols="30" rows="10"></textarea>
                         </div>
+                        <div class="col-12 mb-3">
+                       
+                            <select for="PromotionId" id="PromotionId" name="PromotionId" onchange="SelectedPrromotion()">
+                                <option value="">-- Chọn khuyến mãi --</option>
+                                @foreach (var promotion in Model.promotions)
+                                {
+                                    <option value="@promotion.PromotionID">@promotion.PromotionName</option>
+                                }
+                            </select>
+                        </div>
+                        
                         <input type="hidden" id="IdOrder" name="IdOrder" value="@Model.IdOrder">
                         <button type="submit" class="btn amado-btn w-100 mb-2" formaction="CompleteCheckOut">Thanh toán COD</button>
                         <button type="submit" class="btn amado-btn w-100" formaction="CreatePaymentUrl">Thanh toán trực tuyến</button>
@@ -60,7 +81,7 @@
                     <h5>Cart Total</h5>
                     <ul class="summary-table">
                         <li><span>Tổng cộng:</span> <span>@Model.TotalPrice</span></li>
-                        <li><span>Gía giảm:</span> <span>Free</span></li>
+                        <li><span>Giá giảm:</span> <span id="DiscountAmount">0</span></li>
                         <li><span>Gía giao hàng tiền:</span> <span id="ShippingFeeDisplay">0</span></li>
                         <li><span>Thành tiền:</span> <span id="TotalPrice">@Model.TotalPrice</span></li>
                     </ul>
@@ -126,7 +147,11 @@
                 document.getElementById('ShippingFee').value = shippingFee;
 
                 document.getElementById('ShippingFeeDisplay').innerText = shippingFee;
+
                 var finalPrice = @Model.TotalPrice + shippingFee;
+              
+
+               
                 document.getElementById('TotalPrice').innerText = finalPrice;
                 //TotalPrice
                 Swal.close();
@@ -161,4 +186,41 @@
             }
         });
     }
+    function SelectedPrromotion() {
+        var selectedPromotionId = document.getElementById('PromotionId').value;
+        var totalPrice = parseFloat(document.getElementById('TotalPrice').innerText.replace(' VND', '').replace(',', ''));
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("CalculatePromotionFee", "Cart")",
+            data: {
+                PromotionId: selectedPromotionId,
+                TotalPrice: @Model.TotalPrice,
+            },
+            success: function (result) {
+                var DiscountPrice = result.promotionFee;
+                var shippingFee = parseFloat(document.getElementById('ShippingFee').value);
+
+                document.getElementById('DiscountPrice').value = DiscountPrice;
+
+                var discountAmountElement = document.getElementById('DiscountAmount');
+                var totalPriceElement = document.getElementById('TotalPrice');
+
+                var discountedPrice = parseFloat(@Model.TotalPrice) - parseFloat(DiscountPrice) + shippingFee;
+
+                discountAmountElement.innerText = DiscountPrice + " VND";
+                totalPriceElement.innerText = discountedPrice + " VND";
+            },
+            error: function (error) {
+                Swal.fire({
+                    title: 'Lỗi khi tính giá ',
+                    icon: 'error',
+                    showConfirmButton: true
+                });
+            }
+        });
+    }
+
+
+
 </script>

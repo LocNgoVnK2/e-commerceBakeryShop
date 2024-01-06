@@ -26,7 +26,7 @@ namespace BakeryShop.Controllers
         private readonly IVnPayService _vnPayService;
         private readonly IConfiguration _configuration;
         private readonly IStoreService _storeService;
-        private readonly IPromotionMappingService _promotionMappingService;
+
         private readonly IPromotionService _promotionService;
         private readonly IMapper _mapper;
 
@@ -39,7 +39,7 @@ namespace BakeryShop.Controllers
                               IVnPayService vnPayService,
                               IConfiguration configuration,
                               IStoreService storeService,
-                              IPromotionMappingService promotionMappingService,
+                 
                               IPromotionService promotionService,
                               IMapper mapper
                               )
@@ -53,11 +53,10 @@ namespace BakeryShop.Controllers
             _storeService = storeService;
             _vnPayService = vnPayService;
             _configuration = configuration;
-            _promotionMappingService = promotionMappingService;
+
             _promotionService = promotionService;
             _mapper = mapper;
         }
-        //affect khuyển mãi ở đây
         public async Task<ActionResult> Index(int id, int quantity)
          {
             if (id != 0)
@@ -66,7 +65,9 @@ namespace BakeryShop.Controllers
                 if (oldItemData != null)
                 { // thêm vào card đã có item
 
-                    List<CartItemVewModel> oldItemList = new List<CartItemVewModel>();// thêm giảm giá đây 
+                    List<CartItemVewModel> oldItemList = new List<CartItemVewModel>();
+           
+                   
 
                     oldItemList = JsonConvert.DeserializeObject<List<CartItemVewModel>>(oldItemData);
 
@@ -143,6 +144,8 @@ namespace BakeryShop.Controllers
                             };
 
                             CheckOutViewModel checkOut = new CheckOutViewModel();
+                        //
+                            
                             List<RollBackViewModel> list = new List<RollBackViewModel>();
                             await _orderService.InsertOrder(order);
                             Double totalPrice = 0;
@@ -183,40 +186,39 @@ namespace BakeryShop.Controllers
                                 await _orderService.UpdateOrder(order);
 
                         IQueryable<Promotion> promotions = await _promotionService.GetPromotions();
-
+                        List<Promotion> promotionsApply = new List<Promotion>();
                         foreach (var promotion in promotions)
                         {
-                            if (promotion.Condition <= order.TotalAmount)
+                            if (promotion.Condition <= order.TotalAmount && 
+                                order.OrderDate >= promotion.StartDate &&
+                                order.OrderDate <= promotion.EndDate)
                             {
-                                PromotionMapping mapping = new PromotionMapping()
-                                {
-                                    OrderID = order.OrderID,
-                                    PromotionID = promotion.PromotionID,
-                                    DiscountAmount =(order.TotalAmount * (promotion.DiscountPercentage / 100.0))
-                                };
-
-                                await _promotionMappingService.InsertPromotionMapping(mapping);
+                               
+                                promotionsApply.Add(promotion);
                             }
                         }
+
                         scope.Complete();
 
-                            if (outOfStockProducts.Any())
-                            {
-                                // Thêm thông báo vào TempData nếu có sản phẩm hết số lượng
-                                TempData["OutOfStockProducts"] = string.Join(", ", outOfStockProducts);
-                                return RedirectToAction("Index");
-                            }
+                        if (outOfStockProducts.Any())
+                        {
+                            // Thêm thông báo vào TempData nếu có sản phẩm hết số lượng
+                            TempData["OutOfStockProducts"] = string.Join(", ", outOfStockProducts);
+                            return RedirectToAction("Index");
+                        }
+                        List<PromotionViewModel> promotionViews = _mapper.Map<List<PromotionViewModel>>(promotionsApply);
 
-                            checkOut.IdOrder = order.OrderID;
-                            checkOut.TotalPrice = order.TotalAmount;
-                            checkOut.RollBacks = list;
+                        checkOut.IdOrder = order.OrderID;
+                        checkOut.TotalPrice = order.TotalAmount;
+                        checkOut.RollBacks = list;
+                        checkOut.promotions = promotionViews;
                         // Thêm thông tin load promo mapping lên đây
                         //HowToApplyPromotion
 
                         string serializedItemList = JsonConvert.SerializeObject(checkOut);
-                            HttpContext.Session.SetString("RollBackList", serializedItemList);
+                        HttpContext.Session.SetString("RollBackList", serializedItemList);
 
-                            return View(checkOut);
+                        return View(checkOut);
                         }
                         catch (Exception ex)
                         {
@@ -284,7 +286,7 @@ namespace BakeryShop.Controllers
             Order order = await _orderService.GetOrder((int)checkOut.IdOrder);
             IQueryable<OrderDetail> orderDetail = await _orderDetailService.GetOrderDetailsByOrderId((int)order.OrderID);
             IQueryable<Product> products = await _productsService.GetProducts();
-            IQueryable<PromotionMapping> promoMappings = await _promotionMappingService.GetPromotionMappingsByOrderID((int)order.OrderID);
+          
             foreach (var item in checkOut.RollBacks)
             {
                 var productToUpdate = products.FirstOrDefault(p => p.ProductID == item.Id);
@@ -300,10 +302,7 @@ namespace BakeryShop.Controllers
             {
                 await _orderDetailService.DeleteOrderDetail(item);
             }
-            foreach(var item in promoMappings)
-            {
-                await _promotionMappingService.DeletePromotionMapping(item);
-            }
+
 
             await _orderService.DeleteOrder(order);
             
@@ -312,7 +311,7 @@ namespace BakeryShop.Controllers
 
         public async Task<ActionResult> CompleteCheckOut(CheckOutViewModel checkOutView)
         {
-            // int store = await FindNearStoreFromOrder(checkOutView.Province + checkOutView.District);
+
             int? store = HttpContext.Session.GetInt32("StoreId");
 
             if (store.HasValue) HttpContext.Session.Remove("StoreId");
@@ -337,12 +336,14 @@ namespace BakeryShop.Controllers
                     checkOut.CustomerId = customer.CustomerId;
                     checkOut.IsReceived = false;
                     checkOut.Note = checkOutView.Note;
+                    
                     await _checkOutService.InsertCheckOut(checkOut);
 
                     //set status payment
                     order.PaidStatus = false;
                     order.IdStore = store;
                     order.ShippingFee = checkOutView.ShippingFee;
+                    order.DiscountMoney = checkOutView.DiscountPrice;// bổ sung discount ở đây 
                     await _orderService.UpdateOrder(order);
 
                     scope.Complete();
@@ -562,7 +563,10 @@ namespace BakeryShop.Controllers
 
             Infrastructure.Entities.PaymentInformationModel model = new Infrastructure.Entities.PaymentInformationModel();
             model.Name = checkOutView.FirstName + " " + checkOutView.LastName;
-            model.Amount = (double)order.TotalAmount+ (double)checkOutView.ShippingFee;
+            if (checkOutView.DiscountPrice != null)
+                model.Amount = (double)order.TotalAmount + (double)checkOutView.ShippingFee - (double)checkOutView.DiscountPrice;
+            else
+                model.Amount = (double)order.TotalAmount + (double)checkOutView.ShippingFee;
             //model.Amount = 200000;
             model.OrderDescription = "thanh toán cho hóa đơn: '" + checkOutView.IdOrder + "' với giá :";
             TempData["checkOutViewModel"] = JsonConvert.SerializeObject(checkOutView);
@@ -610,6 +614,7 @@ namespace BakeryShop.Controllers
                         order.PaidStatus = true;
                         order.IdStore = store;
                         order.ShippingFee = checkOutView.ShippingFee;
+                        order.DiscountMoney = checkOutView.DiscountPrice;
                         await _orderService.UpdateOrder(order);
 
                         scope.Complete();
@@ -744,8 +749,27 @@ namespace BakeryShop.Controllers
             }
         }
 
-        //bug
-       
+        [HttpPost]
+        public async Task<ActionResult> CalculatePromotionFee(int PromotionId, Double TotalPrice)
+        {
+            try
+            {
+                if (PromotionId != 0)
+                {
+                    Promotion promotion = await _promotionService.GetPromotion(PromotionId);
+                    var promotionFee = TotalPrice * (double)promotion.DiscountPercentage / 100.0;
+                    return Json(new { promotionFee });
+                }
+                else
+                {
+                    return Json(new { promotionFee=0 });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = "Fail" });
+            }
+        }
 
 
     }

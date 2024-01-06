@@ -1389,13 +1389,14 @@ img {
   font-size: 14px;
   color: #6b6b6b; }
 .checkout_details_area form .nice-select {
-  border-radius: 0;
-  height: 60px;
-  line-height: 60px;
-  background-color: #f5f7fa;
-  border: none;
-  color: #6b6b6b;
-  font-size: 14px; }
+    border-radius: 0;
+    height: 60px;
+    line-height: 60px;
+    background-color: #f5f7fa;
+    border: none;
+    color: #6b6b6b;
+    font-size: 14px;
+}
   .checkout_details_area form .nice-select .list {
     width: 100%;
     border-radius: 0;
